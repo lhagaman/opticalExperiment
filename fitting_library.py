@@ -2,9 +2,6 @@ import numpy as np
 import scipy.optimize
 import matplotlib.pyplot as plt
 
-# convention
-phi_r = 0
-
 
 def F(theta, n_frac):
     theta_t = np.arcsin(1 / n_frac * np.sin(theta))
@@ -71,7 +68,7 @@ class Fitter:
 
 
 class MultiFitter:
-    # takes data = [[xdata1, ydata1, n_0_1, theta_i1], [...], ...]
+    # takes data = [[xdata1, ydata1, n_0_1, theta_i1, phi_r1], [...], ...]
     def __init__(self, data):
         self.data = data
 
@@ -80,25 +77,25 @@ class MultiFitter:
     def fitter(self, theta_r_in_degrees_array, log_rho_L, log_n_minus_one, log_gamma):
         arr = []
         for data in self.data:
-            arr += BRIDF(theta_r_in_degrees_array, self.data[3], self.data[2],
+            arr += BRIDF(theta_r_in_degrees_array, data[4], data[3], data[2],
                         np.exp(log_rho_L), np.exp(log_n_minus_one) + 1, np.exp(log_gamma))
         return [x[0] + x[1] for x in arr]
 
+
 # BRIDF as described in paper
 # returns [[specular1, diffuse1], [specular2, diffuse2], ...]
-def BRIDF(theta_r_in_degrees_array, theta_i_in_degrees, n_0, rho_L, n, gamma):
+def BRIDF(theta_r_in_degrees_array, phi_r, theta_i_in_degrees, n_0, rho_L, n, gamma):
     theta_i = theta_i_in_degrees * np.pi / 180
     return_array = []
-    alpha = alpha_getter(gamma)
     for theta_r_in_degrees in theta_r_in_degrees_array:
-        arr = BRIDF_helper(np.pi * theta_r_in_degrees / 180, theta_i, n_0, rho_L, n, gamma, alpha)
+        arr = BRIDF_helper(np.pi * theta_r_in_degrees / 180, phi_r, theta_i, n_0, rho_L, n, gamma)
         return_array.append([arr[0], arr[1]])
     return return_array
 
 
 # uses radians, has a random alpha already chosen
 # returns [specular, diffuse]
-def BRIDF_helper(theta_r, theta_i, n_0, rho_L, n, gamma, alpha):
+def BRIDF_helper(theta_r, phi_r, theta_i, n_0, rho_L, n, gamma):
     theta_i_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
         np.sin(theta_i) * np.sin(theta_r) * np.cos(phi_r))
 
@@ -127,15 +124,12 @@ def BRIDF_helper(theta_r, theta_i, n_0, rho_L, n, gamma, alpha):
     B = 0.5 * np.power(gamma, 2) / (np.power(gamma, 2) + 0.25) * \
         H(np.cos(phi_r)) * np.cos(phi_r) * np.sin(theta_M) * np.tan(theta_m)
 
-    G = 1
-    # temporary, G seems to always be zero
-    """
     def G_prime(theta):
         return 2 / (1 + np.sqrt(1 + np.power(gamma * np.tan(theta), 2)))
-    
-    G = H(theta_i_prime - np.pi / 2) * H(theta_r_prime - np.pi / 2) * \
+
+    # this has negative of the inside of the H functions from the paper, I think it was a typo
+    G = H(np.pi / 2 - theta_i_prime) * H(np.pi / 2 - theta_r_prime) * \
         G_prime(theta_i) * G_prime(theta_r)
-    """
 
     F_ = F(theta_i, n / n_0)
 
@@ -143,19 +137,10 @@ def BRIDF_helper(theta_r, theta_i, n_0, rho_L, n, gamma, alpha):
         rho_L / np.pi * W * (1 - A + B) * np.cos(theta_r)]
 
 
-def fit_parameters(xdata, ydata, theta_i, n_0):
-
-    fit = Fitter(theta_i, n_0)
-
-    fit_params = scipy.optimize.curve_fit(fit.fitter, xdata, ydata,
-                                          p0=[np.log(0.5), np.log(1.5 - 1), np.log(0.05)])[0]
-    return [np.exp(fit_params[0]), np.exp(fit_params[1]) + 1, np.exp(fit_params[2])]
-
-
 # used to fit parameters for multiple incident angles and n_0
-# takes data = [[xdata1, ydata1, n_0_1, theta_i1], [...], ...]
+# takes data = [[xdata1, ydata1, n_0_1, theta_i1, phi_r1], [...], ...]
 # returns [rho_L, n, gamma]
-# haven't tested this yet, waiting for more data
+# haven't tested this with multiple datasets yet, waiting for more data
 def multi_fit_parameters(data):
     fit = MultiFitter(data)
 
@@ -171,15 +156,26 @@ def multi_fit_parameters(data):
     return [np.exp(fit_params[0]), np.exp(fit_params[1]) + 1, np.exp(fit_params[2])]
 
 
-def plot_data(xdata, ydata, theta_i, n_0, title):
-    fit_params = fit_parameters(xdata, ydata, theta_i, n_0)
+# for plotting just one theta_i and n_0
+def plot_data(xdata, ydata, n_0, theta_i, phi_r, title):
 
-    fitted_data = BRIDF(xdata, theta_i, n_0, fit_params[0], fit_params[1], fit_params[2])
+    data = [[xdata, ydata, n_0, theta_i, phi_r]]
 
-    plt.plot(xdata, ydata, label="experimental")
-    plt.plot(xdata, [x[0] for x in fitted_data], label="fitted specular")
-    plt.plot(xdata, [x[1] for x in fitted_data], label="fitted diffuse")
-    plt.plot(xdata, [x[0] + x[1] for x in fitted_data], label="fitted total")
+    totalxdata = []
+    totalydata = []
+
+    for x in data:
+        totalxdata += x[0]
+        totalydata += x[1]
+
+    fit_params = multi_fit_parameters(data)
+
+    fitted_data = BRIDF(xdata, phi_r, theta_i, n_0, fit_params[0], fit_params[1], fit_params[2])
+
+    plt.plot(totalxdata, totalydata, label="experimental")
+    plt.plot(totalxdata, [x[0] for x in fitted_data], label="fitted specular")
+    plt.plot(totalxdata, [x[1] for x in fitted_data], label="fitted diffuse")
+    plt.plot(totalxdata, [x[0] + x[1] for x in fitted_data], label="fitted total")
 
     plt.title(title)
     plt.legend(bbox_to_anchor=(0.9, 0.9), bbox_transform=plt.gcf().transFigure)
