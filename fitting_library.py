@@ -14,59 +14,6 @@ def H(x):
     return 0.5 * (np.sign(x) + 1)
 
 
-class RandomAlphaChooser:
-
-    def __init__(self, gamma):
-
-        def P(alpha_):
-            return np.power(gamma, 2) / \
-                (np.pi * np.power(np.cos(alpha_), 4) *
-                    np.power(np.power(gamma, 2) + np.power(np.tan(alpha_), 2), 2))
-
-        def alpha_pdf(alpha_):
-            return P(alpha_) * np.sin(alpha_)
-
-        random_alpha_values = []
-
-        even_alpha_values = np.linspace(0, np.pi/2, 100)
-
-        if gamma < 0.01:
-            self.alphas = [0]
-        else:
-
-            for alpha in even_alpha_values:
-                for i in range(np.rint(100 * alpha_pdf(alpha)).astype(int)):
-                    random_alpha_values.append(alpha)
-
-            self.alphas = random_alpha_values
-
-    def get_alpha(self):
-        return np.random.choice(self.alphas)
-
-
-def alpha_getter(gamma):
-
-    chooser = RandomAlphaChooser(gamma)
-
-    N = 1000
-    sum = 0
-    for i in range(N):
-        sum += chooser.get_alpha()
-
-    return sum / N
-
-class Fitter:
-    def __init__(self, theta_i, n_0):
-        self.theta_i = theta_i
-        self.n_0 = n_0
-
-    # BRIDF with n definitely greater than one and rho_L positive to be used for fitting
-    def fitter(self, theta_r_in_degrees_array, log_rho_L, log_n_minus_one, log_gamma):
-        arr = BRIDF(theta_r_in_degrees_array, self.theta_i, self.n_0,
-                    np.exp(log_rho_L), np.exp(log_n_minus_one) + 1, np.exp(log_gamma))
-        return [x[0] + x[1] for x in arr]
-
-
 class MultiFitter:
     # takes data = [[xdata1, ydata1, n_0_1, theta_i1, phi_r1], [...], ...]
     def __init__(self, data):
