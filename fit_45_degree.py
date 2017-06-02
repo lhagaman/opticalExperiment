@@ -1,4 +1,4 @@
-import torrance_sparrow_fit
+import TSTR_fit
 import gaussian_fit
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,16 +27,16 @@ theta_i_in_degrees = 54
 phi_r_in_degrees = 0
 
 
-plot_torrance_sparrow_unpolarized = False
-plot_torrance_sparrow_polarizations = False
+plot_TSTR_unpolarized = False
+plot_TSTR_polarizations = False
 plot_gaussian = False
-plot_torrance_sparrow_unpolarized_and_gaussian = True
+plot_TSTR_unpolarized_and_gaussian = True
 
-if plot_torrance_sparrow_unpolarized:
+if plot_TSTR_unpolarized:
 
     plt.figure()
 
-    title = "45 degree IBA in air, Torrance-Sparrow Fit, unpolarized"
+    title = "45 degree IBA in air, Torrance-Sparrow-Trowbridge-Reitz Fit, unpolarized"
 
     polarization = 0
 
@@ -53,13 +53,13 @@ if plot_torrance_sparrow_unpolarized:
         theta_r_in_degrees_array.append(point[0])
         intensity_array.append(point[5])
 
-    parameters = torrance_sparrow_fit.fit_parameters(points)
+    parameters = TSTR_fit.fit_parameters(points)
 
-    fitted_total_data = torrance_sparrow_fit.BRIDF_plotter(
+    fitted_total_data = TSTR_fit.BRIDF_plotter(
         theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters)
-    fitted_specular_data = torrance_sparrow_fit.BRIDF_specular_plotter(
+    fitted_specular_data = TSTR_fit.BRIDF_specular_plotter(
         theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters)
-    fitted_diffuse_data = torrance_sparrow_fit.BRIDF_diffuse_plotter(
+    fitted_diffuse_data = TSTR_fit.BRIDF_diffuse_plotter(
         theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters)
 
     plt.plot(theta_r_in_degrees_array, intensity_array, label="experimental")
@@ -80,7 +80,7 @@ if plot_torrance_sparrow_unpolarized:
 
     plt.show()
 
-if plot_torrance_sparrow_polarizations:
+if plot_TSTR_polarizations:
 
     for polarization in [0, 1, 2]:
 
@@ -92,7 +92,7 @@ if plot_torrance_sparrow_polarizations:
             p = "s-polarized"
         elif (polarization == 2):
             p = "p-polarized"
-        title = "45 degree IBA in air, Torrance-Sparrow Fit, " + p
+        title = "45 degree IBA in air, TSTR Fit, " + p
 
         # each point has form [theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity]
         points = []
@@ -107,13 +107,13 @@ if plot_torrance_sparrow_polarizations:
             theta_r_in_degrees_array.append(point[0])
             intensity_array.append(point[5])
 
-        parameters = torrance_sparrow_fit.fit_parameters(points)
+        parameters = TSTR_fit.fit_parameters(points)
 
         rho_L = parameters[0]
         n = parameters[1]
         gamma = parameters[2]
 
-        fitted_data = torrance_sparrow_fit.BRIDF_plotter(
+        fitted_data = TSTR_fit.BRIDF_plotter(
             theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters)
 
         plt.plot(theta_r_in_degrees_array, intensity_array, label="experimental")
@@ -175,9 +175,9 @@ if plot_gaussian:
              str(R_1) + "\nR_2: " + str(R_2)
     plt.annotate(string, xy=(0.05, 0.8), xycoords='axes fraction')
 
-if plot_torrance_sparrow_unpolarized_and_gaussian:
+if plot_TSTR_unpolarized_and_gaussian:
 
-    title = "45 degree IBA in air, Torrance-Sparrow unpolarized and Gaussian Fit"
+    title = "45 degree IBA in air, TSTR unpolarized and Gaussian Fit"
 
     polarization = 0
 
@@ -199,20 +199,20 @@ if plot_torrance_sparrow_unpolarized_and_gaussian:
     R_1 = gaussian_parameters[1]
     R_2 = gaussian_parameters[2]
 
-    torrance_sparrow_parameters = torrance_sparrow_fit.fit_parameters(points)
-    rho_L = torrance_sparrow_parameters[0]
-    n = torrance_sparrow_parameters[1]
-    gamma = torrance_sparrow_parameters[2]
+    TSTR_parameters = TSTR_fit.fit_parameters(points)
+    rho_L = TSTR_parameters[0]
+    n = TSTR_parameters[1]
+    gamma = TSTR_parameters[2]
 
     gaussian_fitted_data = gaussian_fit.BRIDF_plotter(theta_r_in_degrees_array, theta_i_in_degrees, gaussian_parameters)
 
-    torrance_sparrow_fitted_data = torrance_sparrow_fit.BRIDF_plotter(theta_r_in_degrees_array, phi_r_in_degrees,
-                                        theta_i_in_degrees, n_0, polarization, torrance_sparrow_parameters)
+    TSTR_fitted_data = TSTR_fit.BRIDF_plotter(theta_r_in_degrees_array, phi_r_in_degrees,
+                                        theta_i_in_degrees, n_0, polarization, TSTR_parameters)
 
     plt.plot(theta_r_in_degrees_array, intensity_array, label="experimental")
     plt.plot(theta_r_in_degrees_array, gaussian_fitted_data, label="Gaussian model")
-    plt.plot(theta_r_in_degrees_array, torrance_sparrow_fitted_data,
-             label="Torrance-Sparrow model")
+    plt.plot(theta_r_in_degrees_array, TSTR_fitted_data,
+             label="TSTR model")
 
     plt.title(title)
     plt.legend(bbox_to_anchor=(0.9, 0.9), bbox_transform=plt.gcf().transFigure)
