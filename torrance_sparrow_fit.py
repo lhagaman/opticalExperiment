@@ -1,5 +1,9 @@
-# fits data points to a Torrance-Sparrow model, as detailed in Reflectance of Polytetrafluoroethylene (PTFE)
-# for Xenon_Scintillation Light, LIP-Coimbra
+#TSTR_fit
+
+# specular follows a torrance-sparrow model
+# diffuse follows a trowbridge-reitz distribution of surface normals combined with lambertian diffusion
+
+# detailed in Reflectance of Polytetrafluoroethylene (PTFE) for Xenon_Scintillation Light, LIP-Coimbra
 
 import numpy as np
 import scipy.optimize
@@ -32,21 +36,43 @@ def H(x):
 
 # BRIDF as described in paper
 # takes an array, easy to plot
-# returns [[specular1, diffuse1], [specular2, diffuse2], ...]
-def BRIDF_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, rho_L, n, gamma, polarization):
+# parameters has form [rho_L, n, gamma]
+
+
+def BRIDF_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters):
     phi_r = phi_r_in_degrees * np.pi / 180
     theta_i = theta_i_in_degrees * np.pi / 180
     return_array = []
     for theta_r_in_degrees in theta_r_in_degrees_array:
         theta_r = np.pi * theta_r_in_degrees / 180
-        arr = BRIDF(theta_r, phi_r, theta_i, n_0, rho_L, n, gamma, polarization)
-        return_array.append([arr[0], arr[1]])
+        return_array.append(BRIDF(theta_r, phi_r, theta_i, n_0, polarization, parameters))
     return return_array
 
 
-# uses radians, takes a single point
-# returns [specular, diffuse]
-def BRIDF(theta_r, phi_r, theta_i, n_0, rho_L, n, gamma, polarization):
+def BRIDF_specular_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters):
+    phi_r = phi_r_in_degrees * np.pi / 180
+    theta_i = theta_i_in_degrees * np.pi / 180
+    return_array = []
+    for theta_r_in_degrees in theta_r_in_degrees_array:
+        theta_r = np.pi * theta_r_in_degrees / 180
+        return_array.append(BRIDF_specular(theta_r, phi_r, theta_i, n_0, polarization, parameters))
+    return return_array
+
+
+def BRIDF_diffuse_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters):
+    phi_r = phi_r_in_degrees * np.pi / 180
+    theta_i = theta_i_in_degrees * np.pi / 180
+    return_array = []
+    for theta_r_in_degrees in theta_r_in_degrees_array:
+        theta_r = np.pi * theta_r_in_degrees / 180
+        return_array.append(BRIDF_diffuse(theta_r, phi_r, theta_i, n_0, polarization, parameters))
+    return return_array
+
+
+def BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters):
+    rho_L = parameters[0]
+    n = parameters[1]
+    gamma = parameters[2]
     theta_i_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
         np.sin(theta_i) * np.sin(theta_r) * np.cos(phi_r))
 
@@ -81,7 +107,7 @@ def BRIDF(theta_r, phi_r, theta_i, n_0, rho_L, n, gamma, polarization):
 
     theta_M = max(theta_i, theta_r)
 
-    B = 0.5 * np.power(gamma, 2) / (np.power(gamma, 2) + 0.25) * \
+    B = 0.45 * np.power(gamma, 2) / (np.power(gamma, 2) + 0.25) * \
         H(np.cos(phi_r)) * np.cos(phi_r) * np.sin(theta_M) * np.tan(theta_m)
 
     def G_prime(theta):
@@ -97,6 +123,19 @@ def BRIDF(theta_r, phi_r, theta_i, n_0, rho_L, n, gamma, polarization):
         rho_L / np.pi * W * (1 - A + B) * np.cos(theta_r)]
 
 
+def BRIDF_specular(theta_r, phi_r, theta_i, n_0, polarization, parameters):
+    return BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters)[0]
+
+
+def BRIDF_diffuse(theta_r, phi_r, theta_i, n_0, polarization, parameters):
+    return BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters)[1]
+
+
+def BRIDF(theta_r, phi_r, theta_i, n_0, polarization, parameters):
+    pair = BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters)
+    return pair[0] + pair[1]
+
+
 # independent variables has the form [theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization]
 def unvectorized_fitter(independent_variables, log_rho_L, log_n_minus_one, log_gamma):
     theta_r = independent_variables[0] * np.pi / 180
@@ -107,8 +146,8 @@ def unvectorized_fitter(independent_variables, log_rho_L, log_n_minus_one, log_g
     rho_L = np.exp(log_rho_L)
     n = np.exp(log_n_minus_one) + 1
     gamma = np.exp(log_gamma)
-    pair = BRIDF(theta_r, phi_r, theta_i, n_0, rho_L, n, gamma, polarization)
-    return pair[0] + pair[1]
+    parameters = [rho_L, n, gamma]
+    return BRIDF(theta_r, phi_r, theta_i, n_0, polarization, parameters)
 
 
 # takes arrays of independent variable lists

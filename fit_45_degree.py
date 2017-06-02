@@ -34,9 +34,11 @@ plot_torrance_sparrow_unpolarized_and_gaussian = True
 
 if plot_torrance_sparrow_unpolarized:
 
-    polarization = 0
+    plt.figure()
 
     title = "45 degree IBA in air, Torrance-Sparrow Fit, unpolarized"
+
+    polarization = 0
 
     # each point has form [theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity]
     points = []
@@ -53,22 +55,25 @@ if plot_torrance_sparrow_unpolarized:
 
     parameters = torrance_sparrow_fit.fit_parameters(points)
 
-    rho_L = parameters[0]
-    n = parameters[1]
-    gamma = parameters[2]
-
-    fitted_data = torrance_sparrow_fit.BRIDF_plotter(
-        theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, rho_L, n, gamma, polarization)
+    fitted_total_data = torrance_sparrow_fit.BRIDF_plotter(
+        theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters)
+    fitted_specular_data = torrance_sparrow_fit.BRIDF_specular_plotter(
+        theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters)
+    fitted_diffuse_data = torrance_sparrow_fit.BRIDF_diffuse_plotter(
+        theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters)
 
     plt.plot(theta_r_in_degrees_array, intensity_array, label="experimental")
-    # plt.plot(theta_r_in_degrees_array, [x[0] for x in fitted_data], label="fitted specular")
-    # plt.plot(theta_r_in_degrees_array, [x[1] for x in fitted_data], label="fitted diffuse")
-    plt.plot(theta_r_in_degrees_array, [x[0] + x[1] for x in fitted_data], label="fitted intensity")
+    plt.plot(theta_r_in_degrees_array, fitted_specular_data, label="fitted specular")
+    plt.plot(theta_r_in_degrees_array, fitted_diffuse_data, label="fitted diffuse")
+    plt.plot(theta_r_in_degrees_array, fitted_total_data, label="fitted intensity")
 
     plt.title(title)
     plt.legend(bbox_to_anchor=(0.9, 0.9), bbox_transform=plt.gcf().transFigure)
     plt.ylabel("relative intensity")
     plt.xlabel("viewing angle (degrees)")
+    rho_L = parameters[0]
+    n = parameters[1]
+    gamma = parameters[2]
     string = "theta_i: " + str(theta_i_in_degrees) + "\nrho_L: " + str(rho_L) + "\nn: " + \
              str(n) + "\ngamma: " + str(gamma)
     plt.annotate(string, xy=(0.05, 0.8), xycoords='axes fraction')
@@ -109,12 +114,10 @@ if plot_torrance_sparrow_polarizations:
         gamma = parameters[2]
 
         fitted_data = torrance_sparrow_fit.BRIDF_plotter(
-            theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, rho_L, n, gamma, polarization)
+            theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters)
 
         plt.plot(theta_r_in_degrees_array, intensity_array, label="experimental")
-        # plt.plot(theta_r_in_degrees_array, [x[0] for x in fitted_data], label="fitted specular")
-        # plt.plot(theta_r_in_degrees_array, [x[1] for x in fitted_data], label="fitted diffuse")
-        plt.plot(theta_r_in_degrees_array, [x[0] + x[1] for x in fitted_data], label="fitted intensity")
+        plt.plot(theta_r_in_degrees_array, fitted_data, label="fitted intensity")
 
         plt.title(title)
         plt.legend(bbox_to_anchor=(0.9, 0.9), bbox_transform=plt.gcf().transFigure)
@@ -149,25 +152,28 @@ if plot_gaussian:
 
     parameters = gaussian_fit.fit_parameters(points)
 
-    sigma = parameters[0]
-    R_1 = parameters[1]
-    R_2 = parameters[2]
-
-    fitted_data = gaussian_fit.BRIDF_plotter(theta_r_in_degrees_array, theta_i_in_degrees, sigma, R_1, R_2)
+    fitted_total_data = gaussian_fit.BRIDF_plotter(theta_r_in_degrees_array, theta_i_in_degrees, parameters)
+    fitted_specular_data = gaussian_fit.BRIDF_specular_plotter(theta_r_in_degrees_array,
+                                                               theta_i_in_degrees, parameters)
+    fitted_diffuse_data = gaussian_fit.BRIDF_diffuse_plotter(theta_r_in_degrees_array, theta_i_in_degrees, parameters)
 
     plt.plot(theta_r_in_degrees_array, intensity_array, label="experimental")
-    #plt.plot(theta_r_in_degrees_array, [x[0] for x in fitted_data], label="fitted specular")
-    #plt.plot(theta_r_in_degrees_array, [x[1] for x in fitted_data], label="fitted diffuse")
-    plt.plot(theta_r_in_degrees_array, [x[0] + x[1] for x in fitted_data], label="fitted intensity")
+    plt.plot(theta_r_in_degrees_array, fitted_specular_data, label="fitted specular")
+    plt.plot(theta_r_in_degrees_array, fitted_diffuse_data, label="fitted diffuse")
+    plt.plot(theta_r_in_degrees_array, fitted_total_data, label="fitted intensity")
 
     plt.title(title)
     plt.legend(bbox_to_anchor=(0.9, 0.9), bbox_transform=plt.gcf().transFigure)
     plt.ylabel("relative intensity")
     plt.xlabel("viewing angle (degrees)")
+
+    sigma = parameters[0]
+    R_1 = parameters[1]
+    R_2 = parameters[2]
+
     string = "theta_i: " + str(theta_i_in_degrees) + "\nsigma: " + str(sigma) + "\nR_1: " + \
              str(R_1) + "\nR_2: " + str(R_2)
     plt.annotate(string, xy=(0.05, 0.8), xycoords='axes fraction')
-
 
 if plot_torrance_sparrow_unpolarized_and_gaussian:
 
@@ -198,14 +204,14 @@ if plot_torrance_sparrow_unpolarized_and_gaussian:
     n = torrance_sparrow_parameters[1]
     gamma = torrance_sparrow_parameters[2]
 
-    gaussian_fitted_data = gaussian_fit.BRIDF_plotter(theta_r_in_degrees_array, theta_i_in_degrees, sigma, R_1, R_2)
+    gaussian_fitted_data = gaussian_fit.BRIDF_plotter(theta_r_in_degrees_array, theta_i_in_degrees, gaussian_parameters)
 
-    torrance_sparrow_fitted_data = torrance_sparrow_fit.BRIDF_plotter(
-        theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, rho_L, n, gamma, polarization)
+    torrance_sparrow_fitted_data = torrance_sparrow_fit.BRIDF_plotter(theta_r_in_degrees_array, phi_r_in_degrees,
+                                        theta_i_in_degrees, n_0, polarization, torrance_sparrow_parameters)
 
     plt.plot(theta_r_in_degrees_array, intensity_array, label="experimental")
-    plt.plot(theta_r_in_degrees_array, [x[0] + x[1] for x in gaussian_fitted_data], label="Gaussian model")
-    plt.plot(theta_r_in_degrees_array, [x[0] + x[1] for x in torrance_sparrow_fitted_data],
+    plt.plot(theta_r_in_degrees_array, gaussian_fitted_data, label="Gaussian model")
+    plt.plot(theta_r_in_degrees_array, torrance_sparrow_fitted_data,
              label="Torrance-Sparrow model")
 
     plt.title(title)

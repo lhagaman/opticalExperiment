@@ -7,32 +7,65 @@ import numpy as np
 import scipy.optimize
 
 
-# uses radians
-# returns [specular, diffuse]
-# only works for phi_r = 0
-# R_1 and R_2 are functions of theta_rot
-def BRIDF(theta_PMT, theta_rot, sigma, R_1, R_2):
-    alpha = np.arccos(np.sin(theta_rot) * np.sin(theta_PMT) + np.cos(theta_rot) * np.cos(theta_PMT))
-    return [R_1 * np.exp(-np.power(alpha, 2) / (2 * np.power(sigma, 2))), R_2 * np.cos(theta_PMT)]
-
-
 # takes an array, easy to plot
 # returns [[specular1, diffuse1], [specular2, diffuse2], ...]
-def BRIDF_plotter(theta_PMT_in_degrees_array, theta_rot_in_degrees, sigma, R_1, R_2):
+def BRIDF_plotter(theta_PMT_in_degrees_array, theta_rot_in_degrees, parameters):
     theta_rot = theta_rot_in_degrees * np.pi / 180
     return_array = []
     for theta_rot_in_degrees in theta_PMT_in_degrees_array:
         theta_PMT = np.pi * theta_rot_in_degrees / 180
-        arr = BRIDF(theta_rot, theta_PMT, sigma, R_1, R_2)
-        return_array.append([arr[0], arr[1]])
+        return_array.append(BRIDF(theta_rot, theta_PMT, parameters))
     return return_array
+
+
+def BRIDF_specular_plotter(theta_PMT_in_degrees_array, theta_rot_in_degrees, parameters):
+    theta_rot = theta_rot_in_degrees * np.pi / 180
+    return_array = []
+    for theta_rot_in_degrees in theta_PMT_in_degrees_array:
+        theta_PMT = np.pi * theta_rot_in_degrees / 180
+        return_array.append(BRIDF_specular(theta_rot, theta_PMT, parameters))
+    return return_array
+
+
+def BRIDF_diffuse_plotter(theta_PMT_in_degrees_array, theta_rot_in_degrees, parameters):
+    theta_rot = theta_rot_in_degrees * np.pi / 180
+    return_array = []
+    for theta_rot_in_degrees in theta_PMT_in_degrees_array:
+        theta_PMT = np.pi * theta_rot_in_degrees / 180
+        return_array.append(BRIDF_diffuse(theta_rot, theta_PMT, parameters))
+    return return_array
+
+
+# uses radians
+# returns [specular, diffuse]
+# only works for phi_r = 0
+# R_1 and R_2 are functions of theta_rot
+def BRIDF_pair(theta_PMT, theta_rot, parameters):
+    sigma = parameters[0]
+    R_1 = parameters[1]
+    R_2 = parameters[2]
+    alpha = np.arccos(np.sin(theta_rot) * np.sin(theta_PMT) + np.cos(theta_rot) * np.cos(theta_PMT))
+    return [R_1 * np.exp(-np.power(alpha, 2) / (2 * np.power(sigma, 2))), R_2 * np.cos(theta_PMT)]
+
+
+def BRIDF(theta_PMT, theta_rot, parameters):
+    pair = BRIDF_pair(theta_PMT, theta_rot, parameters)
+    return pair[0] + pair[1]
+
+
+def BRIDF_specular(theta_PMT, theta_rot, parameters):
+    return BRIDF_pair(theta_PMT, theta_rot, parameters)[0]
+
+
+def BRIDF_diffuse(theta_PMT, theta_rot, parameters):
+    return BRIDF_pair(theta_PMT, theta_rot, parameters)[1]
 
 
 def unvectorized_fitter(independent_variables, sigma, R_1, R_2):
     theta_PMT = independent_variables[0] * np.pi / 180
     theta_rot = independent_variables[1] * np.pi / 180
-    pair = BRIDF(theta_PMT, theta_rot, sigma, R_1, R_2)
-    return pair[0] + pair[1]
+    parameters = [sigma, R_1, R_2]
+    return BRIDF(theta_PMT, theta_rot, parameters)
 
 
 # each independent_variables has the form [theta_PMT_in_degrees, theta_rot_in_degrees]
