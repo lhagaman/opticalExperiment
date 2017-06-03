@@ -1,9 +1,12 @@
-#TSTR_fit
+# TSTR_fit
 
 # specular follows a torrance-sparrow model
 # diffuse follows a trowbridge-reitz distribution of surface normals combined with lambertian diffusion
 
-# detailed in Reflectance of Polytetrafluoroethylene (PTFE) for Xenon_Scintillation Light, LIP-Coimbra
+# described in Reflectance of Polytetrafluoroethylene (PTFE) for Xenon_Scintillation Light, LIP-Coimbra
+
+# called geometrical optical approximation (GOA) model in other Coimbra paper,
+# but this doesn't include the correction factor N
 
 import numpy as np
 import scipy.optimize
@@ -49,7 +52,8 @@ def BRIDF_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees
     return return_array
 
 
-def BRIDF_specular_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters):
+def BRIDF_specular_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees,
+                           n_0, polarization, parameters):
     phi_r = phi_r_in_degrees * np.pi / 180
     theta_i = theta_i_in_degrees * np.pi / 180
     return_array = []
@@ -59,7 +63,8 @@ def BRIDF_specular_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_i
     return return_array
 
 
-def BRIDF_diffuse_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters):
+def BRIDF_diffuse_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees,
+                          n_0, polarization, parameters):
     phi_r = phi_r_in_degrees * np.pi / 180
     theta_i = theta_i_in_degrees * np.pi / 180
     return_array = []
@@ -73,10 +78,10 @@ def BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters):
     rho_L = parameters[0]
     n = parameters[1]
     gamma = parameters[2]
+
     theta_i_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
         np.sin(theta_i) * np.sin(theta_r) * np.cos(phi_r))
 
-    # this part wasn't given in the paper, not entirely sure about it, just swapped i and r
     theta_r_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
         np.sin(theta_i) * np.sin(theta_r))
 
