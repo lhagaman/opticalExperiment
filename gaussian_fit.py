@@ -1,8 +1,6 @@
 # using fit from chapter 6 of Levy thesis
 # assumes theta_tilt (phi_r with other convention) is zero
 
-#TODO: make it only work for fitting one measure of theta_rot at a time
-
 import numpy as np
 import scipy.optimize
 
@@ -42,8 +40,8 @@ def BRIDF_diffuse_plotter(theta_PMT_in_degrees_array, theta_rot_in_degrees, para
 # R_1 and R_2 are functions of theta_rot
 def BRIDF_pair(theta_PMT, theta_rot, parameters):
     sigma = parameters[0]
-    R_1 = parameters[1]
-    R_2 = parameters[2]
+    R_1 = np.abs(parameters[1])
+    R_2 = np.abs(parameters[2])
     alpha = np.arccos(np.sin(theta_rot) * np.sin(theta_PMT) + np.cos(theta_rot) * np.cos(theta_PMT))
     return [R_1 * np.exp(-np.power(alpha, 2) / (2 * np.power(sigma, 2))), R_2 * np.cos(theta_PMT)]
 

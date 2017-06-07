@@ -43,7 +43,7 @@ def H(x):
 
 
 # we don't use the kappa parameter because mu~mu_0 in teflon
-# parameters has the form [rho_L, n, sigma_h, gamma]
+# parameters has the form [rho_L, K, n, gamma]
 # returns [diffuse, specular lobe, specular spike]
 def BRIDF_trio(theta_r, phi_r, theta_i, n_0, polarization, parameters):
 
@@ -61,8 +61,8 @@ def BRIDF_trio(theta_r, phi_r, theta_i, n_0, polarization, parameters):
     alpha_specular = np.arccos((np.cos(theta_i) + np.cos(theta_r)) / (2 * np.cos(theta_i_prime)))
 
     P = np.power(gamma, 2) / \
-    (np.pi * np.power(np.cos(alpha_specular), 4) *
-     np.power(np.power(gamma, 2) + np.power(np.tan(alpha_specular), 2), 2))
+        (np.pi * np.power(np.cos(alpha_specular), 4) *
+         np.power(np.power(gamma, 2) + np.power(np.tan(alpha_specular), 2), 2))
 
     if polarization == 0:
         F = F_unpolarized
@@ -88,6 +88,10 @@ def BRIDF_trio(theta_r, phi_r, theta_i, n_0, polarization, parameters):
     Lambda = np.exp(-K * np.cos(theta_i))
 
     gamma_squared = gamma * gamma
+
+    # make the fitter dislike invalid gamma values
+    if 1 - gamma_squared < 0:
+        return [1000000, 1000000, 1000000]
 
     script_n_0 = 1 / (1 - gamma_squared) - \
                 gamma_squared / (1 - gamma_squared) * \
@@ -177,7 +181,7 @@ def BRIDF_specular_spike_plotter(theta_r_in_degrees_array, phi_r_in_degrees, the
 
 
 # independent variables has the form
-# [theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, wavelength]
+# [theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization]
 def unvectorized_fitter(independent_variables, log_rho_L, log_n_minus_one, log_K, log_gamma):
     theta_r = independent_variables[0] * np.pi / 180
     phi_r = independent_variables[1] * np.pi / 180
