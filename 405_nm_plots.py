@@ -7,10 +7,6 @@ import matplotlib.pyplot as plt
 read_data = True
 plot_all_original_data = False
 plot_all_original_data_with_paper_data_fits = False
-plot_semi_empirical_with_all_points = True
-plot_semi_empirical_with_all_points_adjusted = False
-
-
 
 if read_data:
 
@@ -194,6 +190,7 @@ def plot_with_semi_empirical_and_gaussian_fits(points, title):
     polarization = points[0][4]
 
     semi_empirical_parameters = semi_empirical_fit.fit_parameters(points)
+    TSTR_parameters = TSTR_fit.fit_parameters(points)
     if plot_gaussian:
         gaussian_parameters = gaussian_fit.fit_parameters(points)
 
@@ -207,6 +204,8 @@ def plot_with_semi_empirical_and_gaussian_fits(points, title):
 
         semi_empirical_y = semi_empirical_fit.BRIDF_plotter(one_pass_x_data,
                                 phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, semi_empirical_parameters)
+        TSTR_y = TSTR_fit.BRIDF_plotter(one_pass_x_data,
+                                phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, TSTR_parameters)
         if plot_gaussian:
             gaussian_y = gaussian_fit.BRIDF_plotter(one_pass_x_data, theta_i_in_degrees, gaussian_parameters)
 
@@ -214,27 +213,32 @@ def plot_with_semi_empirical_and_gaussian_fits(points, title):
         plt.title(title)
         plt.scatter(x_data, y_data, marker="x", color="g", label="experimental")
         plt.plot(one_pass_x_data, semi_empirical_y, label="Semi-Empirical Fit")
+        plt.plot(one_pass_x_data, TSTR_y, label="TSTR Fit")
         if plot_gaussian:
             plt.plot(one_pass_x_data, gaussian_y, label="Gaussian Fit")
 
-        rho_L = semi_empirical_parameters[0]
-        n = semi_empirical_parameters[1]
-        K = semi_empirical_parameters[2]
-        gamma = semi_empirical_parameters[3]
+        rho_L_ = semi_empirical_parameters[0]
+        n_ = semi_empirical_parameters[1]
+        K_ = semi_empirical_parameters[2]
+        gamma_ = semi_empirical_parameters[3]
+        rho_L = TSTR_parameters[0]
+        n = TSTR_parameters[1]
+        gamma = TSTR_parameters[2]
 
         if plot_gaussian:
             sigma = gaussian_parameters[0]
             R_1 = gaussian_parameters[1]
             R_2 = gaussian_parameters[2]
 
-        string = "theta_i: " + str(theta_i_in_degrees) + "\n\nrho_L: " + str(rho_L) + "\nn: " + \
-                 str(n) + "\nK: " + str(K) + "\ngamma: " + str(gamma)
+        string = "theta_i: " + str(theta_i_in_degrees) + "\n\nSemi-Empirical Parameters:\nrho_L: " + str(rho_L_) + \
+                 "\nn: " + str(n_) + "\nK: " + str(K_) + "\ngamma: " + str(gamma_) + "\n\nTSTR Parameters:\nrho_L: " + \
+                 str(rho_L) + "\nn: " + str(n) + "\ngamma: " + str(gamma)
         if plot_gaussian:
             string += "\n\nsigma: " + str(sigma) + "\nR_1: " + str(R_1) + "\nR_2: " + str(R_2)
         plt.legend()
         plt.xlabel("viewing angle (degrees)")
         plt.ylabel("relative intensity")
-        plt.annotate(string, xy=(0.05, 0.7), xycoords='axes fraction', size=6)
+        plt.annotate(string, xy=(0.05, 0.5), xycoords='axes fraction', size=6)
 
     plt.show()
 
@@ -256,4 +260,4 @@ def plot_with_semi_empirical_and_gaussian_fits(points, title):
 # plot_with_semi_empirical_and_gaussian_fits(adjusted_points_45_degree_4, "45 deg, adjusted theta_i")
 
 # plot_with_semi_empirical_and_gaussian_fits(all_points, "All Points")
-# plot_with_semi_empirical_and_gaussian_fits(all_points_adjusted, "All Points With Manually Adjusted theta_i Values")
+plot_with_semi_empirical_and_gaussian_fits(all_points_adjusted, "All Points With Manually Adjusted theta_i Values")
