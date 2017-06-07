@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 read_data = True
 plot_all_original_data = False
 plot_all_original_data_with_paper_data_fits = False
+plot_semi_empirical_with_all_points = True
+plot_semi_empirical_with_all_points_adjusted = False
+
 
 
 if read_data:
@@ -126,7 +129,7 @@ def make_points(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, 
     for i in range(numpoints):
         theta_r_in_degrees = theta_r_in_degrees_array[i]
         # try to somewhat account fot the fact that we're not using the sr^-1 units we should be using
-        intensity = 500 * intensity_array[i]
+        intensity = 100 * intensity_array[i]
         points.append([theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees,
                        n_0, polarization, intensity])
     return points
@@ -139,12 +142,21 @@ points_45_degree_2 = make_points(data_45_degree_2_x, 0, 45, 1, 0, data_45_degree
 points_45_degree_3 = make_points(data_45_degree_3_x, 0, 45, 1, 0, data_45_degree_3_y)
 points_45_degree_4 = make_points(data_45_degree_4_x, 0, 45, 1, 0, data_45_degree_4_y)
 
+all_points = points_30_degree_1 + points_30_degree_2 + points_30_degree_3 + points_45_degree_1 + \
+             points_45_degree_2 + points_45_degree_3 + points_45_degree_4
+
 # here I manually adjust some input angles to see how it affects the fit
 # because I suspect some have large errors
+adjusted_points_30_degree_1 = make_points(data_30_degree_1_x, 0, 32, 1, 0, data_30_degree_1_y)
+adjusted_points_30_degree_2 = make_points(data_30_degree_2_x, 0, 32, 1, 0, data_30_degree_2_y)
+adjusted_points_30_degree_3 = make_points(data_30_degree_3_x, 0, 41, 1, 0, data_30_degree_3_y)
 adjusted_points_45_degree_2 = make_points(data_45_degree_2_x, 0, 50, 1, 0, data_45_degree_2_y)
 adjusted_points_45_degree_3 = make_points(data_45_degree_3_x, 0, 51, 1, 0, data_45_degree_3_y)
 adjusted_points_45_degree_4 = make_points(data_45_degree_4_x, 0, 48, 1, 0, data_45_degree_4_y)
 
+all_points_adjusted = adjusted_points_30_degree_1 + adjusted_points_30_degree_2 + adjusted_points_30_degree_3 + \
+                      points_45_degree_1 + adjusted_points_45_degree_2 + adjusted_points_45_degree_3 + \
+                      adjusted_points_45_degree_4
 
 def plot_experimental_data(points, title):
     x_data = [point[0] for point in points]
@@ -154,39 +166,76 @@ def plot_experimental_data(points, title):
     plt.show()
 
 
-# implicitly assumes only theta_r and phi vary, otherwise will get weird results
+# implicitly assumes only theta_r, theta_i, and intensity vary, otherwise will get weird results
+# only does gaussian fit if there's only one theta_i
+# (because the fit parameters are functions of theta_i, more complicated)
 def plot_with_semi_empirical_and_gaussian_fits(points, title):
-    x_data = [point[0] for point in points]
+    one_pass_x_data = []
+    theta_i_list = []
+    points_by_theta_i = []
+    for point in points:
+        if point[0] not in one_pass_x_data:
+            one_pass_x_data.append(point[0])
+        if point[2] not in theta_i_list:
+            theta_i_list.append(point[2])
+            points_by_theta_i.append([point])
+        else:
+            index = 0.5 # to error if not overridden
+            for i in range(len(theta_i_list)):
+                theta_i = theta_i_list[i]
+                if np.round(point[2], 2) == theta_i:
+                    index = i
+            points_by_theta_i[index].append(point)
+
+    plot_gaussian = len(theta_i_list) == 1
+
     phi_r_in_degrees = points[0][1]
-    theta_i_in_degrees = points[0][2]
     n_0 = points[0][3]
     polarization = points[0][4]
-    ydata = [point[5] for point in points]
 
     semi_empirical_parameters = semi_empirical_fit.fit_parameters(points)
-    gaussian_parameters = gaussian_fit.fit_parameters(points)
-    semi_empirical_y = semi_empirical_fit.BRIDF_plotter(x_data,
-                            phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, semi_empirical_parameters)
-    gaussian_y = gaussian_fit.BRIDF_plotter(x_data, theta_i_in_degrees, gaussian_parameters)
+    if plot_gaussian:
+        gaussian_parameters = gaussian_fit.fit_parameters(points)
 
-    plt.figure()
-    plt.title(title)
-    plt.plot(x_data, ydata, label="experimental")
-    plt.plot(x_data, semi_empirical_y, label="Semi-Empirical Fit")
-    plt.plot(x_data, gaussian_y, label="Gaussian Fit")
+    for i in range(len(theta_i_list)):
 
-    rho_L = semi_empirical_parameters[0]
-    n = semi_empirical_parameters[1]
-    K = semi_empirical_parameters[2]
-    gamma = semi_empirical_parameters[3]
-    sigma = gaussian_parameters[0]
-    R_1 = gaussian_parameters[1]
-    R_2 = gaussian_parameters[2]
-    string = "theta_i: " + str(45) + "\n\nrho_L: " + str(rho_L) + "\nn: " + \
-             str(n) + "\nK: " + str(K) + "\ngamma: " + str(gamma) + "\n\nsigma: " + str(sigma) + "\nR_1: " + \
-             str(R_1) + "\nR_2: " + str(R_2)
-    plt.legend()
-    plt.annotate(string, xy=(0.05, 0.7), xycoords='axes fraction', size=6)
+        theta_i_in_degrees = theta_i_list[i]
+        points = points_by_theta_i[i]
+
+        x_data = [point[0] for point in points]
+        y_data = [point[5] for point in points]
+
+        semi_empirical_y = semi_empirical_fit.BRIDF_plotter(one_pass_x_data,
+                                phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, semi_empirical_parameters)
+        if plot_gaussian:
+            gaussian_y = gaussian_fit.BRIDF_plotter(one_pass_x_data, theta_i_in_degrees, gaussian_parameters)
+
+        plt.figure()
+        plt.title(title)
+        plt.scatter(x_data, y_data, marker="x", color="g", label="experimental")
+        plt.plot(one_pass_x_data, semi_empirical_y, label="Semi-Empirical Fit")
+        if plot_gaussian:
+            plt.plot(one_pass_x_data, gaussian_y, label="Gaussian Fit")
+
+        rho_L = semi_empirical_parameters[0]
+        n = semi_empirical_parameters[1]
+        K = semi_empirical_parameters[2]
+        gamma = semi_empirical_parameters[3]
+
+        if plot_gaussian:
+            sigma = gaussian_parameters[0]
+            R_1 = gaussian_parameters[1]
+            R_2 = gaussian_parameters[2]
+
+        string = "theta_i: " + str(theta_i_in_degrees) + "\n\nrho_L: " + str(rho_L) + "\nn: " + \
+                 str(n) + "\nK: " + str(K) + "\ngamma: " + str(gamma)
+        if plot_gaussian:
+            string += "\n\nsigma: " + str(sigma) + "\nR_1: " + str(R_1) + "\nR_2: " + str(R_2)
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("relative intensity")
+        plt.annotate(string, xy=(0.05, 0.7), xycoords='axes fraction', size=6)
+
     plt.show()
 
 # these fit poorly
@@ -205,3 +254,6 @@ def plot_with_semi_empirical_and_gaussian_fits(points, title):
 # plot_with_semi_empirical_and_gaussian_fits(adjusted_points_45_degree_3,
 #                                           "45 deg with blue laser diode, adjusted theta_i")
 # plot_with_semi_empirical_and_gaussian_fits(adjusted_points_45_degree_4, "45 deg, adjusted theta_i")
+
+# plot_with_semi_empirical_and_gaussian_fits(all_points, "All Points")
+# plot_with_semi_empirical_and_gaussian_fits(all_points_adjusted, "All Points With Manually Adjusted theta_i Values")

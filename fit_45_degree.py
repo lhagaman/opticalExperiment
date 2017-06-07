@@ -7,7 +7,12 @@ import matplotlib.pyplot as plt
 data = np.loadtxt("opticalExperiment/45_degree_IBA_in_air.txt", skiprows=1)
 
 theta_r_array = [d[0] for d in data]
-intensity_array = [d[1] for d in data]
+intensity_array_in_volts = [d[1] for d in data]
+
+# normalized by guessing and checking to more closely resemble the units assumed by the models,
+# which are (reflected_flux/steradian)/input_flux
+# eventually we should calibrate our sensor to measure flux/steradian relative to the input flux
+intensity_array = [75 * intensity for intensity in intensity_array_in_volts]
 
 
 # if the lines from back to front annoy you:
@@ -224,6 +229,11 @@ if plot_all_fits:
     plt.plot(theta_r_in_degrees_array, TSTR_fitted_data, label="TSTR model")
     plt.plot(theta_r_in_degrees_array, semi_empirical_fitted_data, label="Semi-Empirical model")
 
+    parameters = [0.5, 1.5, 0.4, 0.05]
+    plt.plot(theta_r_array, semi_empirical_fit.BRIDF_plotter(
+        theta_r_array, phi_r_in_degrees, theta_i_in_degrees, n_0, 0, parameters),
+             label="Semi-Empirical\nusing parameters from paper")
+
     plt.title(title)
     plt.legend(bbox_to_anchor=(0.9, 0.9), bbox_transform=plt.gcf().transFigure)
     plt.ylabel("relative intensity")
@@ -233,6 +243,7 @@ if plot_all_fits:
              str(R_1) + "\nR_2: " + str(R_2) + "\n\nrho_L: " + str(rho_L_) + "\nn: " + \
              str(n_) + "\nK: " + str(K_) + "\ngamma: " + str(gamma_)
     plt.annotate(string, xy=(0.05, 0.5), xycoords='axes fraction', size=8)
+    plt.show()
 
 if plot_semi_empirical_unpolarized:
 
@@ -291,12 +302,14 @@ if False:
 
     parameters = [0.5, 1.5, 0.4, 0.05]
     plt.plot(theta_r_array, semi_empirical_fit.BRIDF_plotter(
-        theta_r_array, phi_r_in_degrees, theta_i_in_degrees, n_0, 0, parameters))
+        theta_r_array, phi_r_in_degrees, theta_i_in_degrees, n_0, 0, parameters),
+             label="Semi-Empirical\nusing parameters from paper")
+    """
     plt.plot(theta_r_array, semi_empirical_fit.BRIDF_specular_spike_plotter(
         theta_r_array, phi_r_in_degrees, theta_i_in_degrees, n_0, 0, parameters))
     plt.plot(theta_r_array, semi_empirical_fit.BRIDF_specular_lobe_plotter(
         theta_r_array, phi_r_in_degrees, theta_i_in_degrees, n_0, 0, parameters))
     plt.plot(theta_r_array, semi_empirical_fit.BRIDF_diffuse_plotter(
         theta_r_array, phi_r_in_degrees, theta_i_in_degrees, n_0, 0, parameters))
-
-plt.show()
+    plt.show()
+    """
