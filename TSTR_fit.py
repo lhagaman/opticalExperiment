@@ -32,6 +32,10 @@ def F_unpolarized(theta_i, n_0, n):
     return 0.5 * (F_s(theta_i, n_0, n) + F_p(theta_i, n_0, n))
 
 
+def F(theta_i, n_0, n, polarization):
+    return polarization * F_p(theta_i, n_0, n) + (1 - polarization) * F_s(theta_i, n_0, n)
+
+
 # heaviside step function
 def H(x):
     return 0.5 * (np.sign(x) + 1)
@@ -94,17 +98,8 @@ def BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters):
 
     P_ = P(alpha_specular)
 
-    if polarization == 0:
-        F = F_unpolarized
-    elif polarization == 1:
-        F = F_s
-    elif polarization == 2:
-        F = F_p
-    else:
-        print("INVALID POLARIZATION")
-
     # There was a typo here, I changed by moving parentheses and taking a reciprocal
-    W = (1 - F(theta_i, n_0, n)) * (1 - F(np.arcsin(n_0 / n * np.sin(theta_r)), n_0, n))
+    W = (1 - F(theta_i, n_0, n, polarization)) * (1 - F(np.arcsin(n_0 / n * np.sin(theta_r)), n_0, n, polarization))
 
     A = 0.5 * np.power(gamma, 2) / (np.power(gamma, 2) + 0.92)
 
@@ -122,7 +117,7 @@ def BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters):
     G = H(np.pi / 2 - theta_i_prime) * H(np.pi / 2 - theta_r_prime) * \
         G_prime(theta_i) * G_prime(theta_r)
 
-    F_ = F(theta_i, n_0, n)
+    F_ = F(theta_i, n_0, n, polarization)
 
     return [F_ * G * P_ / (4 * np.cos(theta_i)),
         rho_L / np.pi * W * (1 - A + B) * np.cos(theta_r)]
@@ -163,13 +158,13 @@ def fitter(independent_variables_array, log_rho_L, log_n_minus_one, log_gamma):
     return arr
 
 
-# each point has form [theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity]
 def fit_parameters(points):
     independent_variables_array = []
     intensity_array = []
     for point in points:
-        independent_variables_array.append(point[:5])
-        intensity_array.append(point[5])
+        independent_variables_array.append([point.theta_r_in_degrees, point.phi_r_in_degrees,
+                                       point.theta_i_in_degrees, point.n_0, point.polarization])
+        intensity_array.append(point.intensity)
     # initial parameters are the ones found in the paper
     fit_params = scipy.optimize.curve_fit(fitter, independent_variables_array, intensity_array,
                                           p0=[np.log(0.5), np.log(1.5 - 1), np.log(0.05)])[0]

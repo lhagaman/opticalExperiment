@@ -80,8 +80,8 @@ def fit_parameters(points):
     independent_variables_array = []
     intensity_array = []
     for point in points:
-        independent_variables_array.append([point[0], point[2]])
-        intensity_array.append(point[5])
+        independent_variables_array.append([point.theta_r_in_degrees, point.theta_i_in_degrees])
+        intensity_array.append(point.intensity)
     # initial parameters are approximately the ones found in the paper
     fit_params = scipy.optimize.curve_fit(fitter, independent_variables_array, intensity_array,
                                           p0=[0.1, 100, 50])[0]
