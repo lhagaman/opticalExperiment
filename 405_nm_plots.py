@@ -1,4 +1,4 @@
-from plotting import plot_with_semi_empirical_and_gaussian_fits
+from plotting import plot_with_semi_empirical_and_gaussian_fits, plot_semi_empirical_components
 import numpy as np
 import matplotlib.pyplot as plt
 from Point import Point
@@ -239,11 +239,14 @@ for point in points_45_degree_water:
 #                                                                        "after changing angles, \ncutoff edge angles, "
 #                                                                        "manually adjusted theta_i value")
 # plot_with_semi_empirical_and_gaussian_fits(cutoff_adjusted_45_degree_2)
-# plot_with_semi_empirical_and_gaussian_fits(cutoff_adjusted_45_degree_3, "45 deg with blue laser diode")
+# plot_with_semi_empirical_and_gaussian_fits(cutoff_adjusted_45_degree_3)
 
-plot_with_semi_empirical_and_gaussian_fits(cutoff_45_degree_water)
+# plot_with_semi_empirical_and_gaussian_fits(cutoff_45_degree_water)
 
 
-# points = cutoff_adjusted_45_degree_1 + cutoff_45_degree_water
-# plot_with_semi_empirical_and_gaussian_fits(points)
+points = cutoff_adjusted_45_degree_1 + cutoff_45_degree_water
+plot_with_semi_empirical_and_gaussian_fits(points)
+
+# plot_semi_empirical_components(cutoff_adjusted_45_degree_1)
+# plot_semi_empirical_components(cutoff_45_degree_water)
 
