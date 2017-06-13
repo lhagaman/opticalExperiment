@@ -179,7 +179,7 @@ def BRIDF_specular_spike_plotter(theta_r_in_degrees_array, phi_r_in_degrees, the
 
 
 # independent variables has the form
-# [theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization]
+# [theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, photodiode_solid_angle]
 def unvectorized_fitter(independent_variables, log_rho_L, log_n_minus_one, log_K, log_gamma):
     theta_r = independent_variables[0] * np.pi / 180
     phi_r = independent_variables[1] * np.pi / 180

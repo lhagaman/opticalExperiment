@@ -1,7 +1,8 @@
-from plotting import plot_with_semi_empirical_and_gaussian_fits, plot_semi_empirical_components
+from plotting import plot_with_semi_empirical_and_gaussian_fits, plot_semi_empirical_components, plot_large_gas_layer
 import numpy as np
 import matplotlib.pyplot as plt
 from Point import Point
+
 
 read_data = True
 plot_all_original_data = False
@@ -244,9 +245,11 @@ for point in points_45_degree_water:
 # plot_with_semi_empirical_and_gaussian_fits(cutoff_45_degree_water)
 
 
-points = cutoff_adjusted_45_degree_1 + cutoff_45_degree_water
-plot_with_semi_empirical_and_gaussian_fits(points)
+# points = cutoff_adjusted_45_degree_1 + cutoff_45_degree_water
+# plot_with_semi_empirical_and_gaussian_fits(points)
 
 # plot_semi_empirical_components(cutoff_adjusted_45_degree_1)
 # plot_semi_empirical_components(cutoff_45_degree_water)
+
+plot_large_gas_layer(cutoff_adjusted_45_degree_1)
 

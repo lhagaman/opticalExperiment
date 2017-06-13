@@ -51,6 +51,12 @@ def BRIDF(theta_PMT, theta_rot, parameters):
     return pair[0] + pair[1]
 
 
+# used for other models to take this model as a piece
+def BRIDF_all_parameters(theta_r, phi_r, theta_i, n_0, polarization, photodiode_solid_angle, parameters):
+    pair = BRIDF_pair(theta_r, theta_i, parameters)
+    return pair[0] + pair[1]
+
+
 def BRIDF_specular(theta_PMT, theta_rot, parameters):
     return BRIDF_pair(theta_PMT, theta_rot, parameters)[0]
 
