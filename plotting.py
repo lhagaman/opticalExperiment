@@ -180,7 +180,7 @@ def plot_semi_empirical_components(points):
     plt.show()
 
 
-def plot_large_gas_layer(points):
+def plot_large_gas_layer_semi_empirical(points):
     one_pass_x_data = []
     run_name_list = []
     points_by_run_name = []
@@ -232,6 +232,68 @@ def plot_large_gas_layer(points):
         string = "theta_i: " + str(theta_i_in_degrees) + "\nn_liquid: 1.69 (chosen)" + \
                  "\n\nSemi-Empirical Parameters:\nrho_L: " + str(rho_L_) + \
                  "\nn_gas (fitted): " + str(n_) + "\nK: " + str(K_) + "\ngamma: " + str(gamma_)
+
+        axes = plt.gca()
+        axes.set_ylim([0, 1.2 * max_y])
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("intensity (flux/str)/(input flux)")
+        plt.annotate(string, xy=(0.05, 0.7), xycoords='axes fraction', size=6)
+
+    plt.show()
+
+
+def plot_large_gas_layer_gaussian(points):
+    one_pass_x_data = []
+    run_name_list = []
+    points_by_run_name = []
+    for point in points:
+        if point.theta_r_in_degrees not in one_pass_x_data:
+            one_pass_x_data.append(point.theta_r_in_degrees)
+        if point.run_name not in run_name_list:
+            run_name_list.append(point.run_name)
+            points_by_run_name.append([point])
+        else:
+            index = 0.5  # to error if not overridden
+            for i in range(len(run_name_list)):
+                run_name = run_name_list[i]
+                if point.run_name == run_name:
+                    index = i
+            points_by_run_name[index].append(point)
+
+    phi_r_in_degrees = points[0].phi_r_in_degrees
+    n_gas = 1.3
+    n_liquid = 1.69
+    polarization = points[0].polarization
+    photodiode_solid_angle = points[0].photodiode_solid_angle
+
+    gaussian_parameters = large_gas_layer_fit.fit_parameters_gaussian(points)
+
+    for i in range(len(run_name_list)):
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+        theta_i_in_degrees = points[0].theta_i_in_degrees
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+        max_y = max(y_data)
+
+        fit_y = large_gas_layer_fit.BRIDF_plotter(gaussian_fit.BRIDF_all_parameters, one_pass_x_data, phi_r_in_degrees,
+                                                  theta_i_in_degrees, n_gas, n_liquid, polarization,
+                                                  photodiode_solid_angle, gaussian_parameters)
+
+        plt.figure()
+        plt.title(run_name + "\nLarge Gas Layer / Gaussian Fit")
+        plt.scatter(x_data, y_data, marker="x", color="r", label="experimental")
+        plt.plot(one_pass_x_data, fit_y, label="fit")
+
+        sigma = gaussian_parameters[0]
+        R_1 = gaussian_parameters[1]
+        R_2 = gaussian_parameters[2]
+
+        string = "theta_i: " + str(theta_i_in_degrees) + "\nn_liquid: 1.69 (chosen)" + "\nn_gas: 1 (chosen)" + \
+                 "\n\nGaussian Parameters:\nsigma: " + str(sigma) + \
+                 "\nR_1: " + str(R_1) + "\nR_2: " + str(R_2)
 
         axes = plt.gca()
         axes.set_ylim([0, 1.2 * max_y])
