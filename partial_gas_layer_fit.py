@@ -63,9 +63,6 @@ def BRIDF_with_gas_layer(BRIDF_gas, theta_r, phi_r, theta_i, n_gas, n_liquid, po
 
     # total internal reflection within liquid
     if n_liquid / n_gas * np.sin(theta_i) > 1:
-        print(n_liquid / n_gas * np.sin(theta_i))
-        print("theta_r: ", theta_r * 180 / np.pi, "not getting in gas layer")
-        print("should be one: ", F(theta_i, n_liquid, n_gas, polarization))
         return specular_component
 
     theta_i_gas = np.arcsin(n_liquid / n_gas * np.sin(theta_i))
@@ -104,7 +101,7 @@ def unvectorized_fitter_gaussian(independent_variables, sigma, R_1, R_2, x):
     phi_r = independent_variables[1] * np.pi / 180
     theta_i = independent_variables[2] * np.pi / 180
 
-    n_gas = 1.3
+    n_gas = 1
     # from Measurement of the Refractive Index and Attenuation Length
     # of Liquid Xenon for its Scintillation Light, Solonov et. al.
     n_liquid = 1.69

@@ -252,6 +252,5 @@ for point in points_45_degree_water:
 # plot_semi_empirical_components(cutoff_adjusted_45_degree_1)
 # plot_semi_empirical_components(cutoff_45_degree_water)
 
-plot_partial_gas_layer_gaussian(cutoff_adjusted_45_degree_1)
-plot_with_semi_empirical_and_gaussian_fits(cutoff_adjusted_45_degree_1)
-
+plot_partial_gas_layer_gaussian(cutoff_adjusted_45_degree_1, cutoff_45_degree_water)
+plt.show()

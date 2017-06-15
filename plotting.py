@@ -262,7 +262,7 @@ def plot_large_gas_layer_gaussian(points):
             points_by_run_name[index].append(point)
 
     phi_r_in_degrees = points[0].phi_r_in_degrees
-    n_gas = 1.3
+    n_gas = 1
     n_liquid = 1.69
     polarization = points[0].polarization
     photodiode_solid_angle = points[0].photodiode_solid_angle
@@ -305,10 +305,11 @@ def plot_large_gas_layer_gaussian(points):
     plt.show()
 
 
-def plot_partial_gas_layer_gaussian(points):
+def plot_partial_gas_layer_gaussian(points_with_liquid, points_without_liquid):
     one_pass_x_data = []
     run_name_list = []
     points_by_run_name = []
+    points = points_with_liquid
     for point in points:
         if point.theta_r_in_degrees not in one_pass_x_data:
             one_pass_x_data.append(point.theta_r_in_degrees)
@@ -324,7 +325,7 @@ def plot_partial_gas_layer_gaussian(points):
             points_by_run_name[index].append(point)
 
     phi_r_in_degrees = points[0].phi_r_in_degrees
-    n_gas = 1.3
+    n_gas = 1
     n_liquid = 1.69
     polarization = points[0].polarization
     photodiode_solid_angle = points[0].photodiode_solid_angle
@@ -349,10 +350,18 @@ def plot_partial_gas_layer_gaussian(points):
                                                   theta_i_in_degrees, n_gas, n_liquid, polarization,
                                                   photodiode_solid_angle, [sigma, R_1, R_2], x)
 
+        # this is the fit if there were no liquid
+        fit_y_gas = gaussian_fit.BRIDF_plotter(one_pass_x_data, theta_i_in_degrees, [sigma, R_1, R_2])
+
         plt.figure()
         plt.title(run_name + "\nPartial Gas Layer / Gaussian Fit")
-        plt.scatter(x_data, y_data, marker="x", color="r", label="experimental")
-        plt.plot(one_pass_x_data, fit_y, label="fit")
+        plt.scatter(x_data, y_data, marker="x", color="r", label="experimental with liquid")
+        if points_without_liquid:
+            x_data_ = [point.theta_r_in_degrees for point in points_without_liquid]
+            y_data_ = [point.intensity for point in points_without_liquid]
+            plt.scatter(x_data_, y_data_, marker="x", color="b", label="experimental without liquid")
+        plt.plot(one_pass_x_data, fit_y, label="fit", color="r")
+        plt.plot(one_pass_x_data, fit_y_gas, label="gaussian fit if there\nwere no liquid", color="b")
 
         string = "theta_i: " + str(theta_i_in_degrees) + "\nn_liquid: " + str(n_liquid) + "\nn_gas: " + str(n_gas) + \
                  "\n\nx: " + str(x) + "\nsigma: " + str(sigma) + \

@@ -52,9 +52,6 @@ def BRIDF(BRIDF_gas, theta_r, phi_r, theta_i, n_gas, n_liquid, polarization, pho
 
     # total internal reflection within liquid
     if n_liquid / n_gas * np.sin(theta_i) > 1:
-        print(n_liquid / n_gas * np.sin(theta_i))
-        print("theta_r: ", theta_r * 180 / np.pi, "not getting in gas layer")
-        print("should be one: ", F(theta_i, n_liquid, n_gas, polarization))
         return specular_component
 
     theta_i_gas = np.arcsin(n_liquid / n_gas * np.sin(theta_i))
