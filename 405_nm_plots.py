@@ -1,5 +1,6 @@
 from plotting import plot_with_semi_empirical_and_gaussian_fits, plot_semi_empirical_components, \
-    plot_large_gas_layer_gaussian, plot_partial_gas_layer_gaussian
+    plot_large_gas_layer_gaussian, plot_partial_gas_layer_gaussian, \
+    plot_with_semi_empirical_TSTR_gaussian_and_partial_gas_layer_fits
 import numpy as np
 import matplotlib.pyplot as plt
 from Point import Point
@@ -252,5 +253,22 @@ for point in points_45_degree_water:
 # plot_semi_empirical_components(cutoff_adjusted_45_degree_1)
 # plot_semi_empirical_components(cutoff_45_degree_water)
 
-plot_partial_gas_layer_gaussian(cutoff_adjusted_45_degree_1, cutoff_45_degree_water)
+"""
+plot_partial_gas_layer_gaussian(cutoff_45_degree_water, cutoff_adjusted_45_degree_1, "\nreal data")
 plt.show()
+
+"""
+
+"""
+artificially_normalized_cutoff_adjusted_45_degree_1 = []
+for point in cutoff_adjusted_45_degree_1[:]:
+    point_copy = Point(point.theta_r_in_degrees, point.phi_r_in_degrees, point.theta_i_in_degrees, point.n_0,
+                       point.polarization, point.intensity, point.wavelength, point.photodiode_solid_angle, point.run_name)
+    point_copy.intensity = 1.2 * point.intensity
+    artificially_normalized_cutoff_adjusted_45_degree_1.append(point_copy)
+
+plot_partial_gas_layer_gaussian(artificially_normalized_cutoff_adjusted_45_degree_1, cutoff_adjusted_45_degree_1, "\n(practice data, picked curves to best demostrate model)")
+plt.show()
+"""
+
+plot_with_semi_empirical_TSTR_gaussian_and_partial_gas_layer_fits(cutoff_adjusted_45_degree_1)

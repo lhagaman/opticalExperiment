@@ -53,7 +53,6 @@ def BRIDF(BRIDF_gas, theta_r, phi_r, theta_i, n_gas, n_liquid, polarization, pho
 # BRIDF_gas takes all independent variables even if model only uses some of those
 # assumes all reflected light has only one reflection off PTFE (no extended bouncing between edges of gas layer)
 def BRIDF_with_gas_layer(BRIDF_gas, theta_r, phi_r, theta_i, n_gas, n_liquid, polarization, photodiode_solid_angle, parameters):
-
     # from liquid/gas interface reflection
     photodiode_angle = np.sqrt(photodiode_solid_angle)
     if np.abs(theta_r - theta_i) <= photodiode_angle and np.abs(phi_r) <= photodiode_angle:
