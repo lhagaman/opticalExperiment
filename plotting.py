@@ -461,7 +461,7 @@ def plot_with_semi_empirical_TSTR_gaussian_and_partial_gas_layer_fits(points):
                  str(partial_gas_layer_parameters[1]) + "\nR_2: " + str(partial_gas_layer_parameters[2]) + "\nx: " + \
                  str(partial_gas_layer_parameters[3])
         axes = plt.gca()
-        axes.set_ylim([0, 1.2 * max_y])
+        axes.set_ylim([-0.4 * max_y, 1.2 * max_y])
         plt.legend()
         plt.xlabel("viewing angle (degrees)")
         plt.ylabel("intensity (flux/str)/(input flux)")

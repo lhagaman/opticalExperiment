@@ -7,7 +7,7 @@ from Point import Point
 
 
 read_data = True
-plot_all_original_data = False
+plot_all_original_data = True
 
 # solid angle of photodiode:
 # 5.435 inches from sample
@@ -190,7 +190,8 @@ adjusted_points_45_degree_3 = make_points(data_45_degree_3_x, 0, 52, 1, 0.5, dat
                                  "45 deg with blue laser diode")
 
 all_points_adjusted = adjusted_points_30_degree_1 + adjusted_points_30_degree_2 + adjusted_points_30_degree_3 + \
-                      adjusted_points_45_degree_1 + adjusted_points_45_degree_2 + adjusted_points_45_degree_3
+                      adjusted_points_45_degree_1 + adjusted_points_45_degree_2 + adjusted_points_45_degree_3 + \
+                      points_45_degree_water
 
 # here I cut off small and large angles where I suspect interference from the edges of the window
 cutoff_45_degree_points_adjusted = []
@@ -267,8 +268,9 @@ for point in cutoff_adjusted_45_degree_1[:]:
     point_copy.intensity = 1.2 * point.intensity
     artificially_normalized_cutoff_adjusted_45_degree_1.append(point_copy)
 
-plot_partial_gas_layer_gaussian(artificially_normalized_cutoff_adjusted_45_degree_1, cutoff_adjusted_45_degree_1, "\n(practice data, picked curves to best demostrate model)")
+plot_partial_gas_layer_gaussian(artificially_normalized_cutoff_adjusted_45_degree_1, cutoff_adjusted_45_degree_1, 
+            "\n(practice data, picked curves to best demostrate model)")
 plt.show()
 """
 
-plot_with_semi_empirical_TSTR_gaussian_and_partial_gas_layer_fits(cutoff_adjusted_45_degree_1)
+# plot_with_semi_empirical_TSTR_gaussian_and_partial_gas_layer_fits(cutoff_adjusted_45_degree_1)
