@@ -2,7 +2,7 @@
 
 from plotting import plot_with_semi_empirical_and_gaussian_fits, plot_semi_empirical_components, \
     plot_large_gas_layer_gaussian, plot_partial_gas_layer_gaussian, \
-    plot_with_semi_empirical_TSTR_gaussian_and_partial_gas_layer_fits
+    plot_with_semi_empirical_TSTR_gaussian_and_partial_gas_layer_fits, plot_with_reff_polynomial_fit
 import numpy as np
 import matplotlib.pyplot as plt
 from Point import Point
@@ -101,9 +101,13 @@ def make_points(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, 
 subtracted_points = make_points(subtracted_data_x, 0, 45, 1, 0.5, subtracted_data_y, 405, photodiode_solid_angle,
                                  "45 deg 405 nm with filter")
 
+"""
 plot_with_semi_empirical_TSTR_gaussian_and_partial_gas_layer_fits(subtracted_points)
 
 plt.plot(background_average_x, background_average_y, label="background")
 plt.plot(data_average_x, data_average_y, label="data")
 plt.legend()
 plt.show()
+"""
+
+plot_with_reff_polynomial_fit(subtracted_points)

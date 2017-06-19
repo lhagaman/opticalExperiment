@@ -1,4 +1,4 @@
-import semi_empirical_fit, TSTR_fit, gaussian_fit, large_gas_layer_fit, partial_gas_layer_fit
+import semi_empirical_fit, TSTR_fit, gaussian_fit, large_gas_layer_fit, partial_gas_layer_fit, reff_polynomial_fit
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -469,3 +469,54 @@ def plot_with_semi_empirical_TSTR_gaussian_and_partial_gas_layer_fits(points):
 
     plt.show()
 
+
+def plot_with_reff_polynomial_fit(points):
+    one_pass_x_data = []
+    run_name_list = []
+    points_by_run_name = []
+    for point in points:
+        if point.theta_r_in_degrees not in one_pass_x_data:
+            one_pass_x_data.append(point.theta_r_in_degrees)
+        if point.run_name not in run_name_list:
+            run_name_list.append(point.run_name)
+            points_by_run_name.append([point])
+        else:
+            index = 0.5  # to error if not overridden
+            for i in range(len(run_name_list)):
+                run_name = run_name_list[i]
+                if point.run_name == run_name:
+                    index = i
+            points_by_run_name[index].append(point)
+
+    parameters = reff_polynomial_fit.fit_parameters(points)
+
+    for i in range(len(run_name_list)):
+
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+        max_y = max(y_data)
+
+        y = reff_polynomial_fit.BRIDF_plotter(one_pass_x_data, parameters)
+
+        plt.figure()
+        plt.title(run_name)
+        plt.scatter(x_data, y_data, marker="x", color="r", label="experimental")
+        plt.plot(one_pass_x_data, y, label="REFF polynomial fit")
+
+        c_1 = parameters[0]
+        c_2 = parameters[1]
+        c_3 = parameters[2]
+
+        string = "theta_i: 0" + "\n\nc_1: " + str(c_1) + "\n\nc_2: " + str(c_2) + "\n\nc_3: " + str(c_3)
+
+        axes = plt.gca()
+        axes.set_ylim([-0.4 * max_y, 1.2 * max_y])
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("intensity (flux/str)/(input flux)")
+        plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
+
+    plt.show()
