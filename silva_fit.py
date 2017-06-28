@@ -1,10 +1,6 @@
-# Semi-Empirical model
+# Silva model
 
-# diffuse described by Wolff-Oren-Nayar model
-# specular lobe described by geometrical optical approximation (GOA) model
-# specular spike described by wave scattering Kirchhoff approximation
-
-# described in Study of the Reflectance Distributions of Fluoropolymers
+# described in A model of the reflection distribution in the vacuum ultra violet region
 # and Other Rough Surfaces with Interest to Scintillation Detectors by Coimbra, 2009
 # equation 4.109, page 121
 # (called the "semi-empirical model" in paper)
@@ -15,6 +11,9 @@ import scipy.optimize
 
 # polarized electric field perpendicular to plane of incidence
 def F_s(theta_i, n_0, n):
+    if np.abs(n_0 / n * np.sin(theta_i)) > 1:
+        # total internal reflection
+        return 1
     theta_t = np.arcsin(n_0 / n * np.sin(theta_i))
     return np.power((n_0 * np.cos(theta_i) - n * np.cos(theta_t)) /
                     (n_0 * np.cos(theta_i) + n * np.cos(theta_t)), 2)
@@ -22,6 +21,9 @@ def F_s(theta_i, n_0, n):
 
 # polarized electric field parallel to plane of incidence
 def F_p(theta_i, n_0, n):
+    if np.abs(n_0 / n * np.sin(theta_i)) > 1:
+        # total internal reflection
+        return 1
     theta_t = np.arcsin(n_0 / n * np.sin(theta_i))
     return np.power((n_0 * np.cos(theta_t) - n * np.cos(theta_i)) /
                     (n_0 * np.cos(theta_t) + n * np.cos(theta_i)), 2)
@@ -40,6 +42,29 @@ def H(x):
     return 0.5 * (np.sign(x) + 1)
 
 
+# this function is used in calculating the total reflectance
+def G_calc(theta_r, phi_r, theta_i, n_0, polarization, photodiode_solid_angle, parameters):
+    rho_L = parameters[0]
+    n = parameters[1]
+    K = parameters[2]
+    gamma = parameters[3]
+
+    theta_i_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
+                                    np.sin(theta_i) * np.sin(theta_r) * np.cos(phi_r))
+
+    theta_r_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
+                                    np.sin(theta_i) * np.sin(theta_r))
+
+    def G_prime(theta):
+        return 2 / (1 + np.sqrt(1 + np.power(gamma * np.tan(theta), 2)))
+
+        # this has negative of the inside of the H functions from the paper, I think it was a typo
+
+    G = H(np.pi / 2 - theta_i_prime) * H(np.pi / 2 - theta_r_prime) * \
+        G_prime(theta_i) * G_prime(theta_r)
+
+    return G
+
 # we don't use the kappa parameter because mu~mu_0 in teflon
 # parameters has the form [rho_L, K, n, gamma]
 # returns [diffuse, specular lobe, specular spike]
@@ -56,11 +81,17 @@ def BRIDF_trio(theta_r, phi_r, theta_i, n_0, polarization, photodiode_solid_angl
     theta_r_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
                                     np.sin(theta_i) * np.sin(theta_r))
 
-    alpha_specular = np.arccos((np.cos(theta_i) + np.cos(theta_r)) / (2 * np.cos(theta_i_prime)))
+    if np.abs((np.cos(theta_i) + np.cos(theta_r)) / (2 * np.cos(theta_i_prime))) > 1:
+        # no valid alpha angle to get the specular reflection from facets, so specular lobe has
+        # zero contribution at this angle
+        lobe_included = False
+    else:
+        lobe_included = True
+        alpha_specular = np.arccos((np.cos(theta_i) + np.cos(theta_r)) / (2 * np.cos(theta_i_prime)))
 
-    P = np.power(gamma, 2) / \
-        (np.pi * np.power(np.cos(alpha_specular), 4) *
-         np.power(np.power(gamma, 2) + np.power(np.tan(alpha_specular), 2), 2))
+        P = np.power(gamma, 2) / \
+            (np.pi * np.power(np.cos(alpha_specular), 4) *
+             np.power(np.power(gamma, 2) + np.power(np.tan(alpha_specular), 2), 2))
 
     F_ = F(theta_i, n_0, n, polarization)
 
@@ -71,10 +102,8 @@ def BRIDF_trio(theta_r, phi_r, theta_i, n_0, polarization, photodiode_solid_angl
     G = H(np.pi / 2 - theta_i_prime) * H(np.pi / 2 - theta_r_prime) * \
         G_prime(theta_i) * G_prime(theta_r)
 
-    W = (1 - F(theta_i, n_0, n, polarization)) * (1 - F(np.arcsin(n_0 / n * np.sin(theta_r)), n_0, n, polarization))
-
-    # from page 152 of paper
-    Lambda = np.exp(-K * np.cos(theta_i))
+    # this is where it differs from semi-empirical fit, Lambda was slightly different
+    C = np.exp(-K / 2 * (np.cos(theta_i) + np.cos(theta_r)))
 
     gamma_squared = gamma * gamma
 
@@ -82,24 +111,12 @@ def BRIDF_trio(theta_r, phi_r, theta_i, n_0, polarization, photodiode_solid_angl
     if 1 - gamma_squared < 0:
         return [1000000, 1000000, 1000000]
 
-    script_n_0 = 1 / (1 - gamma_squared) - \
-                gamma_squared / (1 - gamma_squared) * \
-                np.arctanh(np.sqrt(1 - gamma_squared)) / np.sqrt(1 - gamma_squared)
+    p_d = rho_L / np.pi * np.cos(theta_r) * (1 - F(theta_i, n_0, n, polarization)) * (1 - F(theta_r, n, n_0, polarization))
 
-    script_n = gamma_squared / (2 * (1 - gamma_squared)) - \
-               gamma_squared * (2 - gamma_squared) / (1 - gamma_squared) * \
-               np.arctanh(np.sqrt(1 - gamma_squared)) / np.sqrt(1 - gamma_squared)
-
-    N = G_prime(theta_i) * G_prime(theta_r) * \
-        (script_n_0 - np.tan(theta_i) * np.tan(theta_r) * np.cos(phi_r) * script_n)
-
-    p_d = rho_L / np.pi * N * W * np.cos(theta_r)
-
-    p_s = (1 - Lambda) * 1 / (4 * np.cos(theta_i)) * F_ * P * G
-
-    # delta functions from 4.56 in paper, page 96
-    # confused about r, it seems the BRIDF shouldn't depend on distance, so setting it to one for now
-    r = 1
+    if lobe_included:
+        p_s = (1 - C) * 1 / (4 * np.cos(theta_i)) * F_ * P * G
+    else:
+        p_s = 0
 
     # integrated over the photodiode solid angle, the delta functions go away
     # in paper:
@@ -107,8 +124,8 @@ def BRIDF_trio(theta_r, phi_r, theta_i, n_0, polarization, photodiode_solid_angl
 
     # approximating the photodiode as a square with small solid angle
     photodiode_angle = np.sqrt(photodiode_solid_angle)
-    if np.abs(theta_r - theta_i) <= photodiode_angle and np.abs(phi_r) <= photodiode_angle:
-        p_c = Lambda * F_ * G * 1 / (np.power(r, 2) * np.sin(theta_i))
+    if np.abs(theta_r - theta_i) <= photodiode_angle and np.abs(phi_r) <= photodiode_angle / 2:
+        p_c = C * F_ * G
     else:
         p_c = 0
 
@@ -217,3 +234,40 @@ def fit_parameters(points):
     fit_params = scipy.optimize.curve_fit(fitter, independent_variables_array, intensity_array,
                                         p0=[np.log(0.5), np.log(1.5 - 1), np.log(0.4), np.log(0.05)])[0]
     return [np.exp(fit_params[0]), np.exp(fit_params)[1] + 1, np.exp(fit_params[2]), np.exp(fit_params[3])]
+
+
+# returns [diffuse, specular lobe, specular spike]
+def reflectance_diffuse(theta_i, n_0, polarization, photodiode_solid_angle, parameters):
+
+    a = lambda x : 0
+    b = lambda x : np.pi / 2
+
+    def BRIDF_diffuse_int(theta_r, phi_r):
+        # solid angle not used here
+        solid_angle = 0
+        return BRIDF_diffuse(theta_r, phi_r, theta_i, n_0, polarization, solid_angle, parameters) * np.sin(theta_r) / \
+               G_calc(theta_r, phi_r, theta_i, n_0, polarization, solid_angle, parameters)
+    return scipy.integrate.dblquad(BRIDF_diffuse_int, -np.pi, np.pi, a, b)[0]
+
+
+# returns [diffuse, specular lobe, specular spike]
+def reflectance_specular_lobe(theta_i, n_0, polarization, photodiode_solid_angle, parameters):
+
+    a = lambda x : 0
+    b = lambda x : np.pi / 2
+
+    def BRIDF_specular_lobe_int(theta_r, phi_r):
+        # solid angle not used here
+        solid_angle = 0
+        return BRIDF_specular_lobe(theta_r, phi_r, theta_i, n_0, polarization, solid_angle, parameters) * np.sin(theta_r) / \
+               G_calc(theta_r, phi_r, theta_i, n_0, polarization, solid_angle, parameters)
+    return scipy.integrate.dblquad(BRIDF_specular_lobe_int, -np.pi, np.pi, a, b)[0]
+
+
+# returns [diffuse, specular lobe, specular spike]
+def reflectance_specular_spike(theta_i, n_0, polarization, photodiode_solid_angle, parameters):
+    # solid angle not used here
+    solid_angle = 1
+    # integrating the delta function is the same as integrating over any solid angle, which is what the BRIDF for
+    # the specular spike gives
+    return BRIDF_specular_spike(theta_i, 0, theta_i, n_0, polarization, solid_angle, parameters)
