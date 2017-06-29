@@ -10,6 +10,8 @@ from Point import Point
 import TSTR_fit
 import silva_fit
 
+
+"""
 diffuse = []
 lobe = []
 spike = []
@@ -43,4 +45,26 @@ plt.xlabel("angle of incidence (degrees)")
 plt.ylabel("reflectance")
 plt.legend()
 plt.show()
+"""
+
+# [rho_L, n, gamma]
+# expanded PTFE from paper
+parameters = [0.14, 1.56, 0.146]
+angles = [i for i in range(-30, 90)]
+n_0 = 1
+polarization = 0.5
+
+fit_20 = TSTR_fit.BRIDF_plotter(angles, 0, 20, n_0, polarization, parameters)
+fit_45 = TSTR_fit.BRIDF_plotter(angles, 0, 45, n_0, polarization, parameters)
+fit_65 = TSTR_fit.BRIDF_plotter(angles, 0, 65, n_0, polarization, parameters)
+
+plt.semilogy(angles, fit_20)
+plt.semilogy(angles, fit_45)
+plt.semilogy(angles, fit_65)
+
+plt.show()
+
+
+
+
 

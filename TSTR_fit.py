@@ -16,6 +16,9 @@ import scipy.optimize
 
 # polarized electric field perpendicular to plane of incidence
 def F_s(theta_i, n_0, n):
+    if np.abs(n_0 / n * np.sin(theta_i)) > 1:
+        # total internal reflection
+        return 1
     theta_t = np.arcsin(n_0 / n * np.sin(theta_i))
     return np.power((n_0 * np.cos(theta_i) - n * np.cos(theta_t)) /
                     (n_0 * np.cos(theta_i) + n * np.cos(theta_t)), 2)
@@ -23,6 +26,9 @@ def F_s(theta_i, n_0, n):
 
 # polarized electric field parallel to plane of incidence
 def F_p(theta_i, n_0, n):
+    if np.abs(n_0 / n * np.sin(theta_i)) > 1:
+        # total internal reflection
+        return 1
     theta_t = np.arcsin(n_0 / n * np.sin(theta_i))
     return np.power((n_0 * np.cos(theta_t) - n * np.cos(theta_i)) /
                     (n_0 * np.cos(theta_t) + n * np.cos(theta_i)), 2)
@@ -98,8 +104,12 @@ def BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters):
 
     P_ = P(alpha_specular)
 
-    # There was a typo here, I changed by moving parentheses and taking a reciprocal
-    W = (1 - F(theta_i, n_0, n, polarization)) * (1 - F(np.arcsin(n_0 / n * np.sin(theta_r)), n_0, n, polarization))
+    if np.abs(n_0 / n * np.sin(theta_r)) > 1:
+        # the W expression would have an arcsin error
+        W = 0
+    else:
+        # There was a typo here, I changed by moving parentheses and taking a reciprocal
+        W = (1 - F(theta_i, n_0, n, polarization)) * (1 - F(np.arcsin(n_0 / n * np.sin(theta_r)), n_0, n, polarization))
 
     A = 0.5 * np.power(gamma, 2) / (np.power(gamma, 2) + 0.92)
 

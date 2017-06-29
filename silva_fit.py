@@ -65,6 +65,7 @@ def G_calc(theta_r, phi_r, theta_i, n_0, polarization, photodiode_solid_angle, p
 
     return G
 
+
 # we don't use the kappa parameter because mu~mu_0 in teflon
 # parameters has the form [rho_L, K, n, gamma]
 # returns [diffuse, specular lobe, specular spike]
@@ -101,6 +102,8 @@ def BRIDF_trio(theta_r, phi_r, theta_i, n_0, polarization, photodiode_solid_angl
     # this has negative of the inside of the H functions from the paper, I think it was a typo
     G = H(np.pi / 2 - theta_i_prime) * H(np.pi / 2 - theta_r_prime) * \
         G_prime(theta_i) * G_prime(theta_r)
+
+    print(G)
 
     # this is where it differs from semi-empirical fit, Lambda was slightly different
     C = np.exp(-K / 2 * (np.cos(theta_i) + np.cos(theta_r)))
