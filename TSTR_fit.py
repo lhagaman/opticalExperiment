@@ -160,11 +160,37 @@ def unvectorized_fitter(independent_variables, log_rho_L, log_n_minus_one, log_g
     return BRIDF(theta_r, phi_r, theta_i, n_0, polarization, parameters)
 
 
+# independent variables without angle has the form [theta_r_in_degrees, phi_r_in_degrees, n_0, polarization]
+def unvectorized_fitter_with_angle(independent_variables_without_angle, theta_i, log_rho_L, log_n_minus_one, log_gamma):
+    theta_r = independent_variables_without_angle[0] * np.pi / 180
+    phi_r = independent_variables_without_angle[1] * np.pi / 180
+    n_0 = independent_variables_without_angle[2]
+    polarization = independent_variables_without_angle[2]
+    rho_L = np.exp(log_rho_L)
+    n = np.exp(log_n_minus_one) + 1
+    gamma = np.exp(log_gamma)
+    parameters = [rho_L, n, gamma]
+    return BRIDF(theta_r, phi_r, theta_i, n_0, polarization, parameters)
+
+
 # takes arrays of independent variable lists
 def fitter(independent_variables_array, log_rho_L, log_n_minus_one, log_gamma):
     arr = []
     for independent_variables in independent_variables_array:
         arr.append(unvectorized_fitter(independent_variables, log_rho_L, log_n_minus_one, log_gamma))
+    return arr
+
+
+def fitter_with_angle(independent_variables_without_angle_array, theta_i, log_rho_L, log_n_minus_one, log_gamma):
+    arr = []
+    for i in range(len(independent_variables_without_angle_array)):
+        independent_variables_without_angle = independent_variables_without_angle_array[i]
+        independent_variables = [independent_variables_without_angle[0], independent_variables_without_angle[1], theta_i, independent_variables_without_angle[2], independent_variables_without_angle[3]]
+        fit_val = unvectorized_fitter_with_angle(independent_variables_without_angle, theta_i, log_rho_L, log_n_minus_one, log_gamma)
+        test_fit_val = unvectorized_fitter(independent_variables, log_rho_L, log_n_minus_one, log_gamma)
+        print(fit_val, test_fit_val)
+        print(log_rho_L, log_n_minus_one, log_gamma)
+        arr.append(fit_val)
     return arr
 
 
@@ -179,3 +205,18 @@ def fit_parameters(points):
     fit_params = scipy.optimize.curve_fit(fitter, independent_variables_array, intensity_array,
                                           p0=[np.log(0.5), np.log(1.5 - 1), np.log(0.05)])[0]
     return [np.exp(fit_params[0]), np.exp(fit_params)[1] + 1, np.exp(fit_params[2])]
+
+
+# returns [fitted_theta_i, rho_L, n, gamma]
+# not intended for running data with more than one incident angle at a time
+def fit_parameters_and_angle(points, starting_theta_i):
+    independent_variables_without_angle_array = []
+    intensity_array = []
+    for point in points:
+        independent_variables_without_angle_array.append([point.theta_r_in_degrees, point.phi_r_in_degrees,
+                                            point.n_0, point.polarization])
+        intensity_array.append(point.intensity)
+    # initial parameters are the ones found in the paper
+    fit_params = scipy.optimize.curve_fit(fitter_with_angle, independent_variables_without_angle_array, intensity_array,
+                                          p0=[starting_theta_i, np.log(0.5), np.log(1.5 - 1), np.log(0.05)])[0]
+    return [fit_params[0], np.exp(fit_params[1]), np.exp(fit_params)[2] + 1, np.exp(fit_params[3])]

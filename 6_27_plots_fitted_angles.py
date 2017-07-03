@@ -1,3 +1,5 @@
+# currently not working at all, I think the function is too complicated for scipy to fit with these 4 variables
+
 import numpy as np
 import matplotlib.pyplot as plt
 from Point import Point
@@ -124,13 +126,21 @@ if air_in_cylinder:
         adjusted_cutoff_points_55.append(Point(point.theta_r_in_degrees, 0, 57, 1, 0.5, point.intensity,
                      point.wavelength, point.photodiode_solid_angle, point.run_name))
 
-    TSTR_parameters_30 = TSTR_fit.fit_parameters(adjusted_cutoff_points_30)
-    TSTR_parameters_45 = TSTR_fit.fit_parameters(adjusted_cutoff_points_45)
-    TSTR_parameters_55 = TSTR_fit.fit_parameters(adjusted_cutoff_points_55)
 
-    fit_30 = TSTR_fit.BRIDF_plotter(cutoff_data_30_x, 0, 35, 1, 0.5, TSTR_parameters_30)
-    fit_45 = TSTR_fit.BRIDF_plotter(cutoff_data_45_x, 0, 49, 1, 0.5, TSTR_parameters_45)
-    fit_60 = TSTR_fit.BRIDF_plotter(cutoff_data_55_x, 0, 57, 1, 0.5, TSTR_parameters_55)
+    try:
+        TSTR_parameters_30 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_30, 30)
+    except RuntimeError:
+        TSTR_parameters_30 = [30] + TSTR_fit.fit_parameters(adjusted_cutoff_points_30)
+    print(TSTR_parameters_30)
+
+    TSTR_parameters_45 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_45, 45)
+    print(TSTR_parameters_45)
+    TSTR_parameters_55 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_55, 55)
+    print(TSTR_parameters_55)
+
+    fit_30 = TSTR_fit.BRIDF_plotter(cutoff_data_30_x, 0, TSTR_parameters_30[0], 1, 0.5, TSTR_parameters_30[1:])
+    fit_45 = TSTR_fit.BRIDF_plotter(cutoff_data_45_x, 0, TSTR_parameters_45[0], 1, 0.5, TSTR_parameters_45[1:])
+    fit_55 = TSTR_fit.BRIDF_plotter(cutoff_data_55_x, 0, TSTR_parameters_55[0], 1, 0.5, TSTR_parameters_55[1:])
 
     plt.scatter(cutoff_data_30_x, cutoff_data_30_y, s=5)
     plt.scatter(cutoff_data_45_x, cutoff_data_45_y, s=5)
@@ -138,27 +148,27 @@ if air_in_cylinder:
 
     plt.semilogy(cutoff_data_30_x, fit_30)
     plt.semilogy(cutoff_data_45_x, fit_45)
-    plt.semilogy(cutoff_data_55_x, fit_60)
+    plt.semilogy(cutoff_data_55_x, fit_55)
 
     string = ""
 
-    string += "theta_i: 35\n"
+    string += "theta_i: " + str(TSTR_parameters_30[0]) + "\n"
     string += "TSTR Parameters:\n"
-    string += "rho_L: " + str(TSTR_parameters_30[0]) + ", n: " + str(TSTR_parameters_30[1]) + ", gamma: " + str(TSTR_parameters_30[2]) + "\n\n"
+    string += "rho_L: " + str(TSTR_parameters_30[1]) + ", n: " + str(TSTR_parameters_30[2]) + ", gamma: " + str(TSTR_parameters_30[3]) + "\n\n"
 
-    string += "theta_i: 49\n"
+    string += "theta_i: " + str(TSTR_parameters_45[0]) + "\n"
     string += "TSTR Parameters:\n"
-    string += "rho_L: " + str(TSTR_parameters_45[0]) + ", n: " + str(TSTR_parameters_45[1]) + ", gamma: " + str(TSTR_parameters_45[2]) + "\n\n"
+    string += "rho_L: " + str(TSTR_parameters_45[1]) + ", n: " + str(TSTR_parameters_45[2]) + ", gamma: " + str(TSTR_parameters_45[3]) + "\n\n"
 
-    string += "theta_i: 57\n"
+    string += "theta_i: " + str(TSTR_parameters_55[0]) + "\n"
     string += "TSTR Parameters:\n"
-    string += "rho_L: " + str(TSTR_parameters_55[0]) + ", n: " + str(TSTR_parameters_55[1]) + ", gamma: " + str(TSTR_parameters_55[2])
+    string += "rho_L: " + str(TSTR_parameters_55[1]) + ", n: " + str(TSTR_parameters_55[2]) + ", gamma: " + str(TSTR_parameters_55[3])
 
     plt.legend()
     plt.xlabel("viewing angle (degrees)")
     plt.ylabel("intensity (flux/str)/(input flux)")
     plt.annotate(string, xy=(0.05, 0.2), xycoords='axes fraction', size=8)
-    plt.title("cylindrical cell in air, \nmanually chosen incident angles to match fit, each run has own fit parameters")
+    plt.title("cylindrical cell in air, \nfitted incident angles, each run has own fit parameters")
     plt.show()
 
 water = False
