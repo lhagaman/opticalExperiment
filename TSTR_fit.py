@@ -100,7 +100,10 @@ def BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters):
                (np.pi * np.power(np.cos(alpha_), 4) *
                 np.power(np.power(gamma, 2) + np.power(np.tan(alpha_), 2), 2))
 
-    alpha_specular = np.arccos((np.cos(theta_i) + np.cos(theta_r)) / (2 * np.cos(theta_i_prime)))
+    if theta_i == theta_r:
+        alpha_specular = 0
+    else:
+        alpha_specular = np.arccos((np.cos(theta_i) + np.cos(theta_r)) / (2 * np.cos(theta_i_prime)))
 
     P_ = P(alpha_specular)
 
@@ -183,13 +186,8 @@ def fitter(independent_variables_array, log_rho_L, log_n_minus_one, log_gamma):
 
 def fitter_with_angle(independent_variables_without_angle_array, theta_i, log_rho_L, log_n_minus_one, log_gamma):
     arr = []
-    for i in range(len(independent_variables_without_angle_array)):
-        independent_variables_without_angle = independent_variables_without_angle_array[i]
-        independent_variables = [independent_variables_without_angle[0], independent_variables_without_angle[1], theta_i, independent_variables_without_angle[2], independent_variables_without_angle[3]]
+    for independent_variables_without_angle in independent_variables_without_angle_array:
         fit_val = unvectorized_fitter_with_angle(independent_variables_without_angle, theta_i, log_rho_L, log_n_minus_one, log_gamma)
-        test_fit_val = unvectorized_fitter(independent_variables, log_rho_L, log_n_minus_one, log_gamma)
-        print(fit_val, test_fit_val)
-        print(log_rho_L, log_n_minus_one, log_gamma)
         arr.append(fit_val)
     return arr
 
@@ -209,7 +207,25 @@ def fit_parameters(points):
 
 # returns [fitted_theta_i, rho_L, n, gamma]
 # not intended for running data with more than one incident angle at a time
-def fit_parameters_and_angle(points, starting_theta_i):
+def fit_parameters_and_angle(points):
+    intensities = [point.intensity for point in points]
+    # determine if there is a sharp peak
+    max_point = points[intensities.index(max(intensities))]
+    # peak is within 15 degrees of where it's expected
+    if np.abs(max_point.theta_r_in_degrees - max_point.theta_i_in_degrees) < 15:
+        # use peak as theta_i
+        new_points = points[:]
+        for point in new_points:
+            point.theta_i_in_degrees = max_point.theta_r_in_degrees
+        return [max_point.theta_r_in_degrees] + fit_parameters(new_points)
+    else:
+        # use experimental as theta_i
+        return [max_point.theta_i_in_degrees] + fit_parameters(points)
+
+
+# returns [fitted_theta_i, rho_L, n, gamma]
+# not intended for running data with more than one incident angle at a time
+def fit_parameters_and_angle_with_starting_theta_i(points, starting_theta_i):
     independent_variables_without_angle_array = []
     intensity_array = []
     for point in points:

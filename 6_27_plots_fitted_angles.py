@@ -126,17 +126,9 @@ if air_in_cylinder:
         adjusted_cutoff_points_55.append(Point(point.theta_r_in_degrees, 0, 57, 1, 0.5, point.intensity,
                      point.wavelength, point.photodiode_solid_angle, point.run_name))
 
-
-    try:
-        TSTR_parameters_30 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_30, 30)
-    except RuntimeError:
-        TSTR_parameters_30 = [30] + TSTR_fit.fit_parameters(adjusted_cutoff_points_30)
-    print(TSTR_parameters_30)
-
-    TSTR_parameters_45 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_45, 45)
-    print(TSTR_parameters_45)
-    TSTR_parameters_55 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_55, 55)
-    print(TSTR_parameters_55)
+    TSTR_parameters_30 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_30)
+    TSTR_parameters_45 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_45)
+    TSTR_parameters_55 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_55)
 
     fit_30 = TSTR_fit.BRIDF_plotter(cutoff_data_30_x, 0, TSTR_parameters_30[0], 1, 0.5, TSTR_parameters_30[1:])
     fit_45 = TSTR_fit.BRIDF_plotter(cutoff_data_45_x, 0, TSTR_parameters_45[0], 1, 0.5, TSTR_parameters_45[1:])
