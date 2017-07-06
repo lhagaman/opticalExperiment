@@ -230,7 +230,6 @@ def fit_parameters_and_angle(points):
                                      point_0.n_0, point_0.polarization, parameters_with_theta_i_peak)
         fit_peak_index = fit_array.index(max(fit_array))
         fit_peak = points[fit_peak_index].theta_r_in_degrees
-        print("fit: ", fit_peak, "theta_r: ", theta_r_peak)
         peak_offset = fit_peak - theta_r_peak
         points_2 = change_theta_i(points, theta_r_peak - peak_offset)
         return [theta_r_peak - peak_offset] + fit_parameters(points_2)

@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from Point import Point
-import TSTR_fit
+import TSTR_fit, gaussian_fit
 
 
 def make_points(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity_array,
@@ -29,7 +29,7 @@ photodiode_radius = (9 / 2.0) / 25.4
 
 photodiode_solid_angle = np.pi * np.power(photodiode_radius, 2) / np.power(distance_from_sample_to_photodiode, 2)
 
-air_in_cylinder = True
+air_in_cylinder = False
 if air_in_cylinder:
 
     # volts * amps/volt
@@ -111,28 +111,21 @@ if air_in_cylinder:
 
     all_cutoff_points = cutoff_points_30 + cutoff_points_45 + cutoff_points_55
 
-    adjusted_cutoff_points_30 = []
-    for point in cutoff_points_30:
-        adjusted_cutoff_points_30.append(Point(point.theta_r_in_degrees, 0, 35, 1, 0.5, point.intensity,
-                     point.wavelength, point.photodiode_solid_angle, point.run_name))
-
-    adjusted_cutoff_points_45 = []
-    for point in cutoff_points_45:
-        adjusted_cutoff_points_45.append(Point(point.theta_r_in_degrees, 0, 49, 1, 0.5, point.intensity,
-                     point.wavelength, point.photodiode_solid_angle, point.run_name))
-
-    adjusted_cutoff_points_55 = []
-    for point in cutoff_points_55:
-        adjusted_cutoff_points_55.append(Point(point.theta_r_in_degrees, 0, 57, 1, 0.5, point.intensity,
-                     point.wavelength, point.photodiode_solid_angle, point.run_name))
-
-    TSTR_parameters_30 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_30)
-    TSTR_parameters_45 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_45)
-    TSTR_parameters_55 = TSTR_fit.fit_parameters_and_angle(adjusted_cutoff_points_55)
+    TSTR_parameters_30 = TSTR_fit.fit_parameters_and_angle(cutoff_points_30)
+    TSTR_parameters_45 = TSTR_fit.fit_parameters_and_angle(cutoff_points_45)
+    TSTR_parameters_55 = TSTR_fit.fit_parameters_and_angle(cutoff_points_55)
 
     fit_30 = TSTR_fit.BRIDF_plotter(cutoff_data_30_x, 0, TSTR_parameters_30[0], 1, 0.5, TSTR_parameters_30[1:])
     fit_45 = TSTR_fit.BRIDF_plotter(cutoff_data_45_x, 0, TSTR_parameters_45[0], 1, 0.5, TSTR_parameters_45[1:])
     fit_55 = TSTR_fit.BRIDF_plotter(cutoff_data_55_x, 0, TSTR_parameters_55[0], 1, 0.5, TSTR_parameters_55[1:])
+
+    gaussian_parameters_30 = gaussian_fit.fit_parameters_and_angle(cutoff_points_30)
+    gaussian_parameters_45 = gaussian_fit.fit_parameters_and_angle(cutoff_points_45)
+    gaussian_parameters_55 = gaussian_fit.fit_parameters_and_angle(cutoff_points_55)
+
+    fit_30_gaussian = gaussian_fit.BRIDF_plotter(cutoff_data_30_x, gaussian_parameters_30[0], gaussian_parameters_30[1:])
+    fit_45_gaussian = gaussian_fit.BRIDF_plotter(cutoff_data_45_x, gaussian_parameters_45[0], gaussian_parameters_45[1:])
+    fit_55_gaussian = gaussian_fit.BRIDF_plotter(cutoff_data_55_x, gaussian_parameters_55[0], gaussian_parameters_55[1:])
 
     plt.scatter(cutoff_data_30_x, cutoff_data_30_y, s=5)
     plt.scatter(cutoff_data_45_x, cutoff_data_45_y, s=5)
@@ -142,19 +135,33 @@ if air_in_cylinder:
     plt.semilogy(cutoff_data_45_x, fit_45)
     plt.semilogy(cutoff_data_55_x, fit_55)
 
+    plt.semilogy(cutoff_data_30_x, fit_30_gaussian)
+    plt.semilogy(cutoff_data_45_x, fit_45_gaussian)
+    plt.semilogy(cutoff_data_55_x, fit_55_gaussian)
+
     string = ""
 
+    string += "TSTR Parameters:\n"
     string += "theta_i: " + str(TSTR_parameters_30[0]) + "\n"
-    string += "TSTR Parameters:\n"
-    string += "rho_L: " + str(TSTR_parameters_30[1]) + ", n: " + str(TSTR_parameters_30[2]) + ", gamma: " + str(TSTR_parameters_30[3]) + "\n\n"
+    string += "rho_L: " + str(TSTR_parameters_30[1]) + ", n: " + str(TSTR_parameters_30[2]) + ", gamma: " + str(TSTR_parameters_30[3]) + "\n"
+    string += "Gaussian Parameters:\n"
+    string += "theta_i: " + str(gaussian_parameters_30[0]) + "\n"
+    string += "R_1: " + str(gaussian_parameters_30[1]) + ", R_2: " + str(gaussian_parameters_30[2]) + ", sigma: " + str(gaussian_parameters_30[3]) + "\n\n"
 
+    string += "TSTR Parameters:\n"
     string += "theta_i: " + str(TSTR_parameters_45[0]) + "\n"
-    string += "TSTR Parameters:\n"
-    string += "rho_L: " + str(TSTR_parameters_45[1]) + ", n: " + str(TSTR_parameters_45[2]) + ", gamma: " + str(TSTR_parameters_45[3]) + "\n\n"
+    string += "rho_L: " + str(TSTR_parameters_45[1]) + ", n: " + str(TSTR_parameters_45[2]) + ", gamma: " + str(TSTR_parameters_45[3]) + "\n"
+    string += "Gaussian Parameters:\n"
+    string += "theta_i: " + str(gaussian_parameters_45[0]) + "\n"
+    string += "R_1: " + str(gaussian_parameters_45[1]) + ", R_2: " + str(gaussian_parameters_45[2]) + ", sigma: " + str(gaussian_parameters_45[3]) + "\n\n"
 
-    string += "theta_i: " + str(TSTR_parameters_55[0]) + "\n"
     string += "TSTR Parameters:\n"
-    string += "rho_L: " + str(TSTR_parameters_55[1]) + ", n: " + str(TSTR_parameters_55[2]) + ", gamma: " + str(TSTR_parameters_55[3])
+    string += "theta_i: " + str(TSTR_parameters_55[0]) + "\n"
+    string += "rho_L: " + str(TSTR_parameters_55[1]) + ", n: " + str(TSTR_parameters_55[2]) + ", gamma: " + str(TSTR_parameters_55[3]) + "\n"
+    string += "Gaussian Parameters:\n"
+    string += "theta_i: " + str(gaussian_parameters_55[0]) + "\n"
+    string += "R_1: " + str(gaussian_parameters_55[1]) + ", R_2: " + str(gaussian_parameters_55[2]) + ", sigma: " + str(gaussian_parameters_55[3]) + "\n\n"
+
 
     plt.legend()
     plt.xlabel("viewing angle (degrees)")
@@ -163,7 +170,7 @@ if air_in_cylinder:
     plt.title("cylindrical cell in air, \nfitted incident angles, each run has own fit parameters")
     plt.show()
 
-water = True
+water = False
 if water:
 
     # volts * amps/volt
@@ -246,28 +253,13 @@ if water:
 
     all_cutoff_points = cutoff_points_30 + cutoff_points_45 + cutoff_points_55
 
-    adjusted_cutoff_points_30 = []
-    for point in cutoff_points_30:
-        adjusted_cutoff_points_30.append(Point(point.theta_r_in_degrees, 0, 30, 1.33, 0.5, point.intensity,
-                                               point.wavelength, point.photodiode_solid_angle, point.run_name))
+    TSTR_parameters_30 = TSTR_fit.fit_parameters_and_angle(cutoff_points_30)
+    TSTR_parameters_45 = TSTR_fit.fit_parameters_and_angle(cutoff_points_45)
+    TSTR_parameters_55 = TSTR_fit.fit_parameters_and_angle(cutoff_points_55)
 
-    adjusted_cutoff_points_45 = []
-    for point in cutoff_points_45:
-        adjusted_cutoff_points_45.append(Point(point.theta_r_in_degrees, 0, 45, 1.33, 0.5, point.intensity,
-                                               point.wavelength, point.photodiode_solid_angle, point.run_name))
-
-    adjusted_cutoff_points_55 = []
-    for point in cutoff_points_55:
-        adjusted_cutoff_points_55.append(Point(point.theta_r_in_degrees, 0, 55, 1.33, 0.5, point.intensity,
-                                               point.wavelength, point.photodiode_solid_angle, point.run_name))
-
-    TSTR_parameters_30 = TSTR_fit.fit_parameters(adjusted_cutoff_points_30)
-    TSTR_parameters_45 = TSTR_fit.fit_parameters(adjusted_cutoff_points_45)
-    TSTR_parameters_55 = TSTR_fit.fit_parameters(adjusted_cutoff_points_55)
-
-    fit_30 = TSTR_fit.BRIDF_plotter(cutoff_data_30_x, 0, 30, 1.33, 0.5, TSTR_parameters_30)
-    fit_45 = TSTR_fit.BRIDF_plotter(cutoff_data_45_x, 0, 45, 1.33, 0.5, TSTR_parameters_45)
-    fit_60 = TSTR_fit.BRIDF_plotter(cutoff_data_55_x, 0, 55, 1.33, 0.5, TSTR_parameters_55)
+    fit_30 = TSTR_fit.BRIDF_plotter(cutoff_data_30_x, 0, TSTR_parameters_30[0], 1.33, 0.5, TSTR_parameters_30[1:])
+    fit_45 = TSTR_fit.BRIDF_plotter(cutoff_data_45_x, 0, TSTR_parameters_45[0], 1.33, 0.5, TSTR_parameters_45[1:])
+    fit_55 = TSTR_fit.BRIDF_plotter(cutoff_data_55_x, 0, TSTR_parameters_55[0], 1.33, 0.5, TSTR_parameters_55[1:])
 
     plt.scatter(cutoff_data_30_x, cutoff_data_30_y, s=5)
     plt.scatter(cutoff_data_45_x, cutoff_data_45_y, s=5)
@@ -275,24 +267,24 @@ if water:
 
     plt.semilogy(cutoff_data_30_x, fit_30)
     plt.semilogy(cutoff_data_45_x, fit_45)
-    plt.semilogy(cutoff_data_55_x, fit_60)
+    plt.semilogy(cutoff_data_55_x, fit_55)
 
     string = ""
 
-    string += "theta_i: 30\n"
     string += "TSTR Parameters:\n"
-    string += "rho_L: " + str(TSTR_parameters_30[0]) + ", n: " + str(TSTR_parameters_30[1]) + ", gamma: " + str(
-        TSTR_parameters_30[2]) + "\n\n"
+    string += "theta_i: " + str(TSTR_parameters_30[0]) + "\n"
+    string += "rho_L: " + str(TSTR_parameters_30[1]) + ", n: " + str(TSTR_parameters_30[2]) + ", gamma: " + str(
+        TSTR_parameters_30[3]) + "\n\n"
 
-    string += "theta_i: 45\n"
     string += "TSTR Parameters:\n"
-    string += "rho_L: " + str(TSTR_parameters_45[0]) + ", n: " + str(TSTR_parameters_45[1]) + ", gamma: " + str(
-        TSTR_parameters_45[2]) + "\n\n"
+    string += "theta_i: " + str(TSTR_parameters_45[0]) + "\n"
+    string += "rho_L: " + str(TSTR_parameters_45[1]) + ", n: " + str(TSTR_parameters_45[2]) + ", gamma: " + str(
+        TSTR_parameters_45[3]) + "\n\n"
 
-    string += "theta_i: 55\n"
     string += "TSTR Parameters:\n"
-    string += "rho_L: " + str(TSTR_parameters_55[0]) + ", n: " + str(TSTR_parameters_55[1]) + ", gamma: " + str(
-        TSTR_parameters_55[2])
+    string += "theta_i: " + str(TSTR_parameters_55[0]) + "\n"
+    string += "rho_L: " + str(TSTR_parameters_55[1]) + ", n: " + str(TSTR_parameters_55[2]) + ", gamma: " + str(
+        TSTR_parameters_55[3])
 
     plt.legend()
     plt.xlabel("viewing angle (degrees)")
@@ -385,28 +377,13 @@ if mineral_oil:
 
     all_cutoff_points = cutoff_points_30 + cutoff_points_45 + cutoff_points_55
 
-    adjusted_cutoff_points_30 = []
-    for point in cutoff_points_30:
-        adjusted_cutoff_points_30.append(Point(point.theta_r_in_degrees, 0, 30, 1.461, 0.5, point.intensity,
-                                               point.wavelength, point.photodiode_solid_angle, point.run_name))
+    TSTR_parameters_30 = TSTR_fit.fit_parameters_and_angle(cutoff_points_30)
+    TSTR_parameters_45 = TSTR_fit.fit_parameters_and_angle(cutoff_points_45)
+    TSTR_parameters_55 = TSTR_fit.fit_parameters_and_angle(cutoff_points_55)
 
-    adjusted_cutoff_points_45 = []
-    for point in cutoff_points_45:
-        adjusted_cutoff_points_45.append(Point(point.theta_r_in_degrees, 0, 45, 1.461, 0.5, point.intensity,
-                                               point.wavelength, point.photodiode_solid_angle, point.run_name))
-
-    adjusted_cutoff_points_55 = []
-    for point in cutoff_points_55:
-        adjusted_cutoff_points_55.append(Point(point.theta_r_in_degrees, 0, 69, 1.461, 0.5, point.intensity,
-                                               point.wavelength, point.photodiode_solid_angle, point.run_name))
-
-    TSTR_parameters_30 = TSTR_fit.fit_parameters(adjusted_cutoff_points_30)
-    TSTR_parameters_45 = TSTR_fit.fit_parameters(adjusted_cutoff_points_45)
-    TSTR_parameters_55 = TSTR_fit.fit_parameters(adjusted_cutoff_points_55)
-
-    fit_30 = TSTR_fit.BRIDF_plotter(cutoff_data_30_x, 0, 35, 1.461, 0.5, TSTR_parameters_30)
-    fit_45 = TSTR_fit.BRIDF_plotter(cutoff_data_45_x, 0, 45, 1.461, 0.5, TSTR_parameters_45)
-    fit_60 = TSTR_fit.BRIDF_plotter(cutoff_data_55_x, 0, 69, 1.461, 0.5, TSTR_parameters_55)
+    fit_30 = TSTR_fit.BRIDF_plotter(cutoff_data_30_x, 0, TSTR_parameters_30[0], 1.461, 0.5, TSTR_parameters_30[1:])
+    fit_45 = TSTR_fit.BRIDF_plotter(cutoff_data_45_x, 0, TSTR_parameters_45[0], 1.461, 0.5, TSTR_parameters_45[1:])
+    fit_55 = TSTR_fit.BRIDF_plotter(cutoff_data_55_x, 0, TSTR_parameters_55[0], 1.461, 0.5, TSTR_parameters_55[1:])
 
     plt.scatter(cutoff_data_30_x, cutoff_data_30_y, s=5)
     plt.scatter(cutoff_data_45_x, cutoff_data_45_y, s=5)
@@ -414,22 +391,22 @@ if mineral_oil:
 
     plt.semilogy(cutoff_data_30_x, fit_30)
     plt.semilogy(cutoff_data_45_x, fit_45)
-    plt.semilogy(cutoff_data_55_x, fit_60)
+    plt.semilogy(cutoff_data_55_x, fit_55)
 
     string = ""
 
-    string += "theta_i: 30\n"
     string += "TSTR Parameters:\n"
+    string += "theta_i: " + str(TSTR_parameters_30[0]) + "\n"
     string += "rho_L: " + str(TSTR_parameters_30[0]) + ", n: " + str(TSTR_parameters_30[1]) + ", gamma: " + str(
         TSTR_parameters_30[2]) + "\n\n"
 
-    string += "theta_i: 45\n"
     string += "TSTR Parameters:\n"
+    string += "theta_i: " + str(TSTR_parameters_45[0]) + "\n"
     string += "rho_L: " + str(TSTR_parameters_45[0]) + ", n: " + str(TSTR_parameters_45[1]) + ", gamma: " + str(
         TSTR_parameters_45[2]) + "\n\n"
 
-    string += "theta_i: 69\n"
     string += "TSTR Parameters:\n"
+    string += "theta_i: " + str(TSTR_parameters_55[0]) + "\n"
     string += "rho_L: " + str(TSTR_parameters_55[0]) + ", n: " + str(TSTR_parameters_55[1]) + ", gamma: " + str(
         TSTR_parameters_55[2])
 
