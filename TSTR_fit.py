@@ -205,19 +205,36 @@ def fit_parameters(points):
     return [np.exp(fit_params[0]), np.exp(fit_params)[1] + 1, np.exp(fit_params[2])]
 
 
+def change_theta_i(points, new_theta_i):
+    new_points = points[:]
+    for point in new_points:
+        point.theta_i_in_degrees = new_theta_i
+    return new_points
+
+
 # returns [fitted_theta_i, rho_L, n, gamma]
 # not intended for running data with more than one incident angle at a time
 def fit_parameters_and_angle(points):
     intensities = [point.intensity for point in points]
     # determine if there is a sharp peak
     max_point = points[intensities.index(max(intensities))]
+    theta_r_peak = max_point.theta_r_in_degrees
     # peak is within 15 degrees of where it's expected
     if np.abs(max_point.theta_r_in_degrees - max_point.theta_i_in_degrees) < 15:
         # use peak as theta_i
-        new_points = points[:]
-        for point in new_points:
-            point.theta_i_in_degrees = max_point.theta_r_in_degrees
-        return [max_point.theta_r_in_degrees] + fit_parameters(new_points)
+        points_1 = change_theta_i(points, theta_r_peak)
+        parameters_with_theta_i_peak = fit_parameters(points_1)
+        theta_r_in_degrees_array = [point.theta_r_in_degrees for point in points]
+        point_0 = points_1[0]
+        fit_array = BRIDF_plotter(theta_r_in_degrees_array, point_0.phi_r_in_degrees, point_0.theta_i_in_degrees,
+                                     point_0.n_0, point_0.polarization, parameters_with_theta_i_peak)
+        fit_peak_index = fit_array.index(max(fit_array))
+        fit_peak = points[fit_peak_index].theta_r_in_degrees
+        print("fit: ", fit_peak, "theta_r: ", theta_r_peak)
+        peak_offset = fit_peak - theta_r_peak
+        points_2 = change_theta_i(points, theta_r_peak - peak_offset)
+        return [theta_r_peak - peak_offset] + fit_parameters(points_2)
+
     else:
         # use experimental as theta_i
         return [max_point.theta_i_in_degrees] + fit_parameters(points)

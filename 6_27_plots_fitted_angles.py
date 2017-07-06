@@ -163,7 +163,7 @@ if air_in_cylinder:
     plt.title("cylindrical cell in air, \nfitted incident angles, each run has own fit parameters")
     plt.show()
 
-water = False
+water = True
 if water:
 
     # volts * amps/volt
@@ -302,7 +302,7 @@ if water:
         "cylindrical cell in water, \neach run has own fit parameters")
     plt.show()
 
-mineral_oil = False
+mineral_oil = True
 if mineral_oil:
 
     # volts * amps/volt
