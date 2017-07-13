@@ -76,13 +76,13 @@ if make_all_points:
         data_75_y = [intensity_factor * point[1] for point in data_75]
 
         points_30 = make_points(data_30_x, 0, 30, 1, 0.5, data_30_y, 405, photodiode_solid_angle,
-                                "30 degrees")
+                                "30 degrees air")
         points_45 = make_points(data_45_x, 0, 45, 1, 0.5, data_45_y, 405, photodiode_solid_angle,
-                                "45 degrees")
+                                "45 degrees air")
         points_60 = make_points(data_60_x, 0, 60, 1, 0.5, data_60_y, 405, photodiode_solid_angle,
-                                "60 degrees")
+                                "60 degrees air")
         points_75 = make_points(data_75_x, 0, 75, 1, 0.5, data_75_y, 405, photodiode_solid_angle,
-                                "75 degrees")
+                                "75 degrees air")
 
         points = points_30 + points_45 + points_60 + points_75
 
@@ -167,13 +167,13 @@ if make_all_points:
         data_75_y = [intensity_factor * point[1] for point in data_75]
 
         points_30 = make_points(data_30_x, 0, 30, 1.33, 0.5, data_30_y, 405, photodiode_solid_angle,
-                                "30 degrees")
+                                "30 degrees water")
         points_45 = make_points(data_45_x, 0, 45, 1.33, 0.5, data_45_y, 405, photodiode_solid_angle,
-                                "45 degrees")
+                                "45 degrees water")
         points_60 = make_points(data_60_x, 0, 60, 1.33, 0.5, data_60_y, 405, photodiode_solid_angle,
-                                "60 degrees")
+                                "60 degrees water")
         points_75 = make_points(data_75_x, 0, 75, 1.33, 0.5, data_75_y, 405, photodiode_solid_angle,
-                                "75 degrees")
+                                "75 degrees water")
 
         points = points_30 + points_45 + points_60 + points_75
 
@@ -258,13 +258,13 @@ if make_all_points:
         data_75_y = [intensity_factor * point[1] for point in data_75]
 
         points_30 = make_points(data_30_x, 0, 30, 1.461, 0.5, data_30_y, 405, photodiode_solid_angle,
-                                "30 degrees")
+                                "30 degrees mineral oil")
         points_45 = make_points(data_45_x, 0, 45, 1.461, 0.5, data_45_y, 405, photodiode_solid_angle,
-                                "45 degrees")
+                                "45 degrees mineral oil")
         points_60 = make_points(data_60_x, 0, 60, 1.461, 0.5, data_60_y, 405, photodiode_solid_angle,
-                                "60 degrees")
+                                "60 degrees mineral oil")
         points_75 = make_points(data_75_x, 0, 75, 1.461, 0.5, data_75_y, 405, photodiode_solid_angle,
-                                "75 degrees")
+                                "75 degrees mineral oil")
 
         points = points_30 + points_45 + points_60 + points_75
 
@@ -318,10 +318,10 @@ fit_plot_water = False
 if fit_plot_water:
     plot_with_TSTR_fit(all_cutoff_points_water, "TSTR Fit in Water")
 
-fit_plot_mineral_oil = False
+fit_plot_mineral_oil = True
 if fit_plot_mineral_oil:
     plot_with_TSTR_fit(all_cutoff_points_mineral_oil, "TSTR Fit in Mineral Oil")
 
-fit_plot_all_points = True
+fit_plot_all_points = False
 if fit_plot_all_points:
     plot_with_TSTR_fit(all_cutoff_points, "TSTR Fit in Air, Water, and Mineral Oil")

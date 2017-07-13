@@ -542,15 +542,16 @@ def plot_with_TSTR_fit(points, title):
     one_pass_x_data = sorted(one_pass_x_data)
 
     phi_r_in_degrees = points[0].phi_r_in_degrees
-    n_0 = points[0].n_0
     polarization = points[0].polarization
 
     TSTR_parameters = TSTR_fit.fit_parameters(points)
 
+    # make a plot for each angle
     for i in range(len(run_name_list)):
 
         run_name = run_name_list[i]
         points = points_by_run_name[i]
+        n_0 = points[0].n_0
         theta_i_in_degrees = points[0].theta_i_in_degrees
 
         x_data = [point.theta_r_in_degrees for point in points]
@@ -614,4 +615,10 @@ def plot_with_TSTR_fit(points, title):
     plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
 
     plt.show()
+
+
+# uses points to predict a curve
+# outputs two plots, one with the points used for fit and the other with the predicted
+def TSTR_predict(points_used_for_fit, predicted_points, title):
+    return
 
