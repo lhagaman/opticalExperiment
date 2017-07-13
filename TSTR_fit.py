@@ -14,6 +14,29 @@ import scipy.optimize
 # following equations could be refined for mu !~ mu_0, but teflon has mu~mu_0
 
 
+# this function is used in calculating the total reflectance
+def G_calc(theta_r, phi_r, theta_i, n_0, polarization, parameters):
+    rho_L = parameters[0]
+    n = parameters[1]
+    gamma = parameters[2]
+
+    theta_i_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
+                                    np.sin(theta_i) * np.sin(theta_r) * np.cos(phi_r))
+
+    theta_r_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
+                                    np.sin(theta_i) * np.sin(theta_r))
+
+    def G_prime(theta):
+        return 2 / (1 + np.sqrt(1 + np.power(gamma * np.tan(theta), 2)))
+
+        # this has negative of the inside of the H functions from the paper, I think it was a typo
+
+    G = H(np.pi / 2 - theta_i_prime) * H(np.pi / 2 - theta_r_prime) * \
+        G_prime(theta_i) * G_prime(theta_r)
+
+    return G
+
+
 # polarized electric field perpendicular to plane of incidence
 def F_s(theta_i, n_0, n):
     if np.abs(n_0 / n * np.sin(theta_i)) > 1:
@@ -252,3 +275,50 @@ def fit_parameters_and_angle_with_starting_theta_i(points, starting_theta_i):
     fit_params = scipy.optimize.curve_fit(fitter_with_angle, independent_variables_without_angle_array, intensity_array,
                                           p0=[starting_theta_i, np.log(0.5), np.log(1.5 - 1), np.log(0.05)])[0]
     return [fit_params[0], np.exp(fit_params[1]), np.exp(fit_params)[2] + 1, np.exp(fit_params[3])]
+
+
+def reflectance(theta_i_in_degrees, n_0, polarization, parameters):
+
+    theta_i = theta_i_in_degrees * np.pi / 180
+
+    a = lambda x: 0
+    b = lambda x: np.pi / 2
+
+    def BRIDF_int(theta_r, phi_r):
+        # solid angle not used here
+        G = G_calc(theta_r, phi_r, theta_i, n_0, polarization, parameters)
+        return BRIDF(theta_r, phi_r, theta_i, n_0, polarization, parameters) * np.sin(theta_r) / G
+
+    return scipy.integrate.dblquad(BRIDF_int, -np.pi, np.pi, a, b)[0]
+
+
+def reflectance_diffuse(theta_i_in_degrees, n_0, polarization, parameters):
+
+    theta_i = theta_i_in_degrees * np.pi / 180
+
+    a = lambda x: 0
+    b = lambda x: np.pi / 2
+
+    def BRIDF_int(theta_r, phi_r):
+        # solid angle not used here
+        G = G_calc(theta_r, phi_r, theta_i, n_0, polarization, parameters)
+        return BRIDF_diffuse(theta_r, phi_r, theta_i, n_0, polarization, parameters) * np.sin(theta_r) / G
+
+    return scipy.integrate.dblquad(BRIDF_int, -np.pi, np.pi, a, b)[0]
+
+
+def reflectance_specular(theta_i_in_degrees, n_0, polarization, parameters):
+
+    theta_i = theta_i_in_degrees * np.pi / 180
+
+    a = lambda x: 0
+    b = lambda x: np.pi / 2
+
+    def BRIDF_int(theta_r, phi_r):
+        G = G_calc(theta_r, phi_r, theta_i, n_0, polarization, parameters)
+        return BRIDF_specular(theta_r, phi_r, theta_i, n_0, polarization, parameters) * np.sin(theta_r) / G
+
+    return scipy.integrate.dblquad(BRIDF_int, -np.pi, np.pi, a, b)[0]
+
+
+

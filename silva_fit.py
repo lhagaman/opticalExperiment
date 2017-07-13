@@ -242,8 +242,8 @@ def fit_parameters(points):
 # returns [diffuse, specular lobe, specular spike]
 def reflectance_diffuse(theta_i, n_0, polarization, photodiode_solid_angle, parameters):
 
-    a = lambda x : 0
-    b = lambda x : np.pi / 2
+    a = lambda x: 0
+    b = lambda x: np.pi / 2
 
     def BRIDF_diffuse_int(theta_r, phi_r):
         # solid angle not used here
