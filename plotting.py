@@ -1,6 +1,7 @@
 import semi_empirical_fit, TSTR_fit, gaussian_fit, large_gas_layer_fit, partial_gas_layer_fit, reff_polynomial_fit
 import numpy as np
 import matplotlib.pyplot as plt
+from Point import Point
 
 
 # implicitly assumes only theta_r, theta_i, and intensity vary, otherwise will get weird results
@@ -610,11 +611,52 @@ def plot_with_TSTR_fit(points, title):
     n = TSTR_parameters[1]
     gamma = TSTR_parameters[2]
 
-    string = "theta_i: " + str(theta_i_in_degrees) + "\n\nTSTR Parameters:\nrho_L: " + \
+    string = "TSTR Parameters:\nrho_L: " + \
              str(rho_L) + "\nn: " + str(n) + "\ngamma: " + str(gamma)
     plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
 
     plt.show()
+
+
+def change_theta_i(points, new_theta_i):
+    new_points = points[:]
+    for point in new_points:
+        point.theta_i_in_degrees = new_theta_i
+    return new_points
+
+
+def plot_with_TSTR_fit_and_fitted_angles(points, title):
+    new_points = []
+
+    theta_i_list = []
+    points_by_run = []
+    for point in points:
+        if not point.theta_i_in_degrees in theta_i_list:
+            theta_i_list.append(point.theta_i_in_degrees)
+            points_by_run.append([])
+        points_by_run[theta_i_list.index(point.theta_i_in_degrees)].append(point)
+    for points in points_by_run:
+        intensities = [point.intensity for point in points]
+        # determine if there is a sharp peak
+        max_point = points[intensities.index(max(intensities))]
+        theta_r_peak = max_point.theta_r_in_degrees
+
+        # peak is within 15 degrees of where it's expected
+        if np.abs(max_point.theta_r_in_degrees - max_point.theta_i_in_degrees) < 15:
+            # use peak as theta_i
+            points_1 = change_theta_i(points, theta_r_peak)
+            parameters_with_theta_i_peak = TSTR_fit.fit_parameters(points_1)
+            theta_r_in_degrees_array = [point.theta_r_in_degrees for point in points]
+            point_0 = points_1[0]
+            fit_array = TSTR_fit.BRIDF_plotter(theta_r_in_degrees_array, point_0.phi_r_in_degrees, point_0.theta_i_in_degrees,
+                                      point_0.n_0, point_0.polarization, parameters_with_theta_i_peak)
+            fit_peak_index = fit_array.index(max(fit_array))
+            fit_peak = points[fit_peak_index].theta_r_in_degrees
+            peak_offset = fit_peak - theta_r_peak
+            points = change_theta_i(points, theta_r_peak - peak_offset)
+            new_points += points
+
+    plot_with_TSTR_fit(new_points, title)
 
 
 # uses points to predict a curve
@@ -622,3 +664,31 @@ def plot_with_TSTR_fit(points, title):
 def TSTR_predict(points_used_for_fit, predicted_points, title):
     return
 
+
+def make_points(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity_array,
+                 wavelength, photodiode_solid_angle, run_name):
+    points = []
+    numpoints = len(theta_r_in_degrees_array)
+    for i in range(numpoints):
+        theta_r_in_degrees = theta_r_in_degrees_array[i]
+        intensity = intensity_array[i]
+        point = Point(theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity,
+                 wavelength, photodiode_solid_angle, run_name)
+        points.append(point)
+    return points
+
+
+# returns a list of runs which each consist of a list of x_data and a list of y_data
+def make_data_by_run(filename, lower_cutoff, upper_cutoff, intensity_factor=1):
+
+    data = np.loadtxt(filename, skiprows=1)
+    data_by_run = []
+
+    for i in range(len(data)):
+        # if the x_data decreases (new run)
+        if i == 0 or data[i][0] < data[i - 1][0]:
+            data_by_run.append([[], []])
+        if lower_cutoff <= data[i][0] <= upper_cutoff:
+            data_by_run[-1][0].append(np.round(data[i][0], 2))
+            data_by_run[-1][1].append(intensity_factor * data[i][1])
+    return data_by_run
