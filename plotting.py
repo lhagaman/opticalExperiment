@@ -543,7 +543,6 @@ def plot_with_TSTR_fit(points, title):
     one_pass_x_data = sorted(one_pass_x_data)
 
     phi_r_in_degrees = points[0].phi_r_in_degrees
-    polarization = points[0].polarization
 
     TSTR_parameters = TSTR_fit.fit_parameters(points)
 
@@ -553,6 +552,7 @@ def plot_with_TSTR_fit(points, title):
         run_name = run_name_list[i]
         points = points_by_run_name[i]
         n_0 = points[0].n_0
+        polarization = points[0].polarization
         theta_i_in_degrees = points[0].theta_i_in_degrees
 
         x_data = [point.theta_r_in_degrees for point in points]
@@ -583,29 +583,32 @@ def plot_with_TSTR_fit(points, title):
         plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
 
     plt.figure()
-    for i in range(len(run_name_list)):
 
+    current_max_y = 0
+    for i in range(len(run_name_list)):
         run_name = run_name_list[i]
         points = points_by_run_name[i]
+        n_0 = points[0].n_0
+        polarization = points[0].polarization
         theta_i_in_degrees = points[0].theta_i_in_degrees
 
         x_data = [point.theta_r_in_degrees for point in points]
         y_data = [point.intensity for point in points]
 
-        max_y = max(y_data)
+        current_max_y = max(current_max_y, max(y_data))
 
         TSTR_y = TSTR_fit.BRIDF_plotter(one_pass_x_data,
                                         phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, TSTR_parameters)
 
-        plt.title(title)
         plt.scatter(x_data, y_data, s=2, label=run_name + " experimental")
         plt.plot(one_pass_x_data, TSTR_y, label=run_name + " TSTR Fit")
 
-        axes = plt.gca()
-        axes.set_ylim([0, 1.2 * max_y])
-        plt.legend()
-        plt.xlabel("viewing angle (degrees)")
-        plt.ylabel("intensity (flux/str)/(input flux)")
+    plt.title(title)
+    axes = plt.gca()
+    axes.set_ylim([0, 1.2 * current_max_y])
+    plt.legend()
+    plt.xlabel("viewing angle (degrees)")
+    plt.ylabel("intensity (flux/str)/(input flux)")
 
     rho_L = TSTR_parameters[0]
     n = TSTR_parameters[1]
@@ -692,3 +695,69 @@ def make_data_by_run(filename, lower_cutoff, upper_cutoff, intensity_factor=1):
             data_by_run[-1][0].append(np.round(data[i][0], 2))
             data_by_run[-1][1].append(intensity_factor * data[i][1])
     return data_by_run
+
+
+def plot_points(points, title):
+    one_pass_x_data = []
+    run_name_list = []
+    points_by_run_name = []
+    for point in points:
+        if point.theta_r_in_degrees not in one_pass_x_data:
+            one_pass_x_data.append(point.theta_r_in_degrees)
+        if point.run_name not in run_name_list:
+            run_name_list.append(point.run_name)
+            points_by_run_name.append([point])
+        else:
+            index = 0.5  # to error if not overridden
+            for i in range(len(run_name_list)):
+                run_name = run_name_list[i]
+                if point.run_name == run_name:
+                    index = i
+            points_by_run_name[index].append(point)
+
+    # make a plot for each angle
+    for i in range(len(run_name_list)):
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+        theta_i_in_degrees = points[0].theta_i_in_degrees
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+
+        max_y = max(y_data)
+
+        plt.figure()
+        plt.title(run_name)
+        plt.scatter(x_data, y_data, color="r", s=2, label="experimental")
+
+        string = "theta_i: " + str(theta_i_in_degrees)
+
+        axes = plt.gca()
+        axes.set_ylim([0, 1.2 * max_y])
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("intensity (flux/str)/(input flux)")
+        plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
+
+    plt.figure()
+    for i in range(len(run_name_list)):
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+
+        max_y = max(y_data)
+
+        plt.title(title)
+        plt.scatter(x_data, y_data, s=2, label=run_name)
+
+        axes = plt.gca()
+        axes.set_ylim([0, 1.2 * max_y])
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("intensity (flux/str)/(input flux)")
+
+    plt.show()
+
+

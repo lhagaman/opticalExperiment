@@ -37,7 +37,7 @@ def G_calc(theta_r, phi_r, theta_i, n_0, polarization, parameters):
     return G
 
 
-# polarized electric field perpendicular to plane of incidence
+# polarized electric field perpendicular to plane of incidence (vertical)
 def F_s(theta_i, n_0, n):
     if np.abs(n_0 / n * np.sin(theta_i)) > 1:
         # total internal reflection
@@ -47,7 +47,7 @@ def F_s(theta_i, n_0, n):
                     (n_0 * np.cos(theta_i) + n * np.cos(theta_t)), 2)
 
 
-# polarized electric field parallel to plane of incidence
+# polarized electric field parallel to plane of incidence (horizontal)
 def F_p(theta_i, n_0, n):
     if np.abs(n_0 / n * np.sin(theta_i)) > 1:
         # total internal reflection
