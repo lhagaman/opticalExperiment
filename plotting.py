@@ -562,6 +562,9 @@ def plot_with_TSTR_fit(points, title):
 
         TSTR_y = TSTR_fit.BRIDF_plotter(one_pass_x_data,
                                         phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, TSTR_parameters)
+        #temporary
+        print(polarization)
+        print(TSTR_y)
 
         plt.figure()
         plt.title(run_name)
