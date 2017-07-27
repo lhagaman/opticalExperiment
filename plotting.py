@@ -621,6 +621,106 @@ def plot_with_TSTR_fit(points, title):
     plt.show()
 
 
+def plot_with_semi_empirical_fit(points, title):
+    one_pass_x_data = []
+    run_name_list = []
+    points_by_run_name = []
+    for point in points:
+        if point.theta_r_in_degrees not in one_pass_x_data:
+            one_pass_x_data.append(point.theta_r_in_degrees)
+        if point.run_name not in run_name_list:
+            run_name_list.append(point.run_name)
+            points_by_run_name.append([point])
+        else:
+            index = 0.5  # to error if not overridden
+            for i in range(len(run_name_list)):
+                run_name = run_name_list[i]
+                if point.run_name == run_name:
+                    index = i
+            points_by_run_name[index].append(point)
+    one_pass_x_data = sorted(one_pass_x_data)
+
+    phi_r_in_degrees = points[0].phi_r_in_degrees
+
+    semi_empirical_parameters = semi_empirical_fit.fit_parameters(points)
+
+    # make a plot for each angle
+    for i in range(len(run_name_list)):
+
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+        n_0 = points[0].n_0
+        polarization = points[0].polarization
+        theta_i_in_degrees = points[0].theta_i_in_degrees
+        photodiode_angle = points[0].photodiode_angular_width
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+
+        max_y = max(y_data)
+
+        semi_empirical_y = semi_empirical_fit.BRIDF_plotter(one_pass_x_data,
+                                        phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, photodiode_angle, semi_empirical_parameters)
+
+        plt.figure()
+        plt.title(run_name)
+        plt.scatter(x_data, y_data, color="r", s=2, label="experimental")
+        plt.plot(one_pass_x_data, semi_empirical_y, label="Semi-Empirical Fit")
+
+        rho_L = semi_empirical_parameters[0]
+        n = semi_empirical_parameters[1]
+        K = semi_empirical_parameters[2]
+        gamma = semi_empirical_parameters[3]
+
+        string = "theta_i: " + str(theta_i_in_degrees) + "\n\nSemi-Empirical Parameters:\nrho_L: " + \
+                 str(rho_L) + "\nn: " + str(n) + "\nK: " + str(K) + "\ngamma: " + str(gamma)
+
+        axes = plt.gca()
+        axes.set_ylim([0, 1.2 * max_y])
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("intensity (flux/str)/(input flux)")
+        plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
+
+    plt.figure()
+
+    current_max_y = 0
+    for i in range(len(run_name_list)):
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+        n_0 = points[0].n_0
+        polarization = points[0].polarization
+        theta_i_in_degrees = points[0].theta_i_in_degrees
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+
+        current_max_y = max(current_max_y, max(y_data))
+
+        semi_empirical_y = semi_empirical_fit.BRIDF_plotter(one_pass_x_data, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, photodiode_angle, semi_empirical_parameters)
+
+        plt.scatter(x_data, y_data, s=2, label=run_name + " experimental")
+        plt.plot(one_pass_x_data, semi_empirical_y, label=run_name + " TSTR Fit")
+
+    plt.title(title)
+    axes = plt.gca()
+    axes.set_ylim([0, 1.2 * current_max_y])
+    plt.legend()
+    plt.xlabel("viewing angle (degrees)")
+    plt.ylabel("intensity (flux/str)/(input flux)")
+
+    rho_L = semi_empirical_parameters[0]
+    n = semi_empirical_parameters[1]
+    K = semi_empirical_parameters[2]
+    gamma = semi_empirical_parameters[3]
+
+    string = "\n\nSemi-Empirical Parameters:\nrho_L: " + str(rho_L) + "\nn: " + str(n) + "\nK: " + str(K) + "\ngamma: " + str(gamma)
+
+    plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
+
+    plt.show()
+
+
 def change_theta_i(points, new_theta_i):
     new_points = points[:]
     for point in new_points:
@@ -669,14 +769,14 @@ def TSTR_predict(points_used_for_fit, predicted_points, title):
 
 
 def make_points(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity_array,
-                 wavelength, photodiode_solid_angle, run_name):
+                 wavelength, photodiode_solid_angle, photodiode_angular_width, run_name):
     points = []
     numpoints = len(theta_r_in_degrees_array)
     for i in range(numpoints):
         theta_r_in_degrees = theta_r_in_degrees_array[i]
         intensity = intensity_array[i]
         point = Point(theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity,
-                 wavelength, photodiode_solid_angle, run_name)
+                 wavelength, photodiode_solid_angle, photodiode_angular_width, run_name)
         points.append(point)
     return points
 

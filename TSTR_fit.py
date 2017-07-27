@@ -135,7 +135,7 @@ def BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters):
         W = 0
     else:
         # There was a typo here, I changed by moving parentheses and taking a reciprocal
-        W = (1 - F(theta_i, n_0, n, polarization)) * (1 - F(np.arcsin(n_0 / n * np.sin(theta_r)), n_0, n, polarization))
+        W = (1 - F(theta_i, n_0, n, polarization)) * (1 - F_unpolarized(np.arcsin(n_0 / n * np.sin(theta_r)), n, n_0))
 
     A = 0.5 * np.power(gamma, 2) / (np.power(gamma, 2) + 0.92)
 

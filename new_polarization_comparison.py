@@ -8,12 +8,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Point import Point
 import TSTR_fit
-from plotting import plot_with_TSTR_fit, make_points, make_data_by_run, plot_with_TSTR_fit_and_fitted_angles, plot_points
+from plotting import plot_with_TSTR_fit, make_points, make_data_by_run, plot_with_TSTR_fit_and_fitted_angles, plot_points, plot_with_semi_empirical_fit
 
 # in inches
 distance_from_sample_to_photodiode = 5.435
 
-# these are guessed, need to measure later
 photodiode_height = 0.450
 photodiode_width = 0.075
 
@@ -55,72 +54,72 @@ if make_all_points:
     horizontal = True
     if horizontal:
 
-        data_30_horizontal_air = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_horizontal)[0]
+        data_30_horizontal_air = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in air.txt", 0, 80, intensity_factor_air_horizontal)[0]
         data_45_horizontal_air = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in air.txt", 0, 80, intensity_factor_air_horizontal)[1]
-        data_60_horizontal_air = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_horizontal)[2]
-        data_75_horizontal_air = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_horizontal)[3]
+        data_60_horizontal_air = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in air.txt", -20, 80, intensity_factor_air_horizontal)[2]
+        data_75_horizontal_air = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in air.txt", -20, 80, intensity_factor_air_horizontal)[3]
 
-        points_30_horizontal_air = make_points(data_30_horizontal_air[0], 0, 30, 1, 1, data_30_horizontal_air[1], 405, photodiode_solid_angle, "30 degrees horizontal air")
-        points_45_horizontal_air = make_points(data_45_horizontal_air[0], 0, 45, 1, 1, data_45_horizontal_air[1], 405, photodiode_solid_angle, "45 degrees horizontal air")
-        points_60_horizontal_air = make_points(data_60_horizontal_air[0], 0, 60, 1, 1, data_60_horizontal_air[1], 405, photodiode_solid_angle, "60 degrees horizontal air")
-        points_75_horizontal_air = make_points(data_75_horizontal_air[0], 0, 75, 1, 1, data_75_horizontal_air[1], 405, photodiode_solid_angle, "75 degrees horizontal air")
-
-
-        data_30_horizontal_water = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_horizontal)[0]
-        data_45_horizontal_water = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_horizontal)[1]
-        data_60_horizontal_water = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_horizontal)[2]
-        data_75_horizontal_water = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_horizontal)[3]
-
-        points_30_horizontal_water = make_points(data_30_horizontal_water[0], 0, 30, 1.33, 1, data_30_horizontal_water[1], 405, photodiode_solid_angle, "30 degrees horizontal water")
-        points_45_horizontal_water = make_points(data_45_horizontal_water[0], 0, 45, 1.33, 1, data_45_horizontal_water[1], 405, photodiode_solid_angle, "45 degrees horizontal water")
-        points_60_horizontal_water = make_points(data_60_horizontal_water[0], 0, 60, 1.33, 1, data_60_horizontal_water[1], 405, photodiode_solid_angle, "60 degrees horizontal water")
-        points_75_horizontal_water = make_points(data_75_horizontal_water[0], 0, 75, 1.33, 1, data_75_horizontal_water[1], 405, photodiode_solid_angle, "75 degrees horizontal water")
+        points_30_horizontal_air = make_points(data_30_horizontal_air[0], 0, 30, 1, 1, data_30_horizontal_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees horizontal air")
+        points_45_horizontal_air = make_points(data_45_horizontal_air[0], 0, 45, 1, 1, data_45_horizontal_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees horizontal air")
+        points_60_horizontal_air = make_points(data_60_horizontal_air[0], 0, 60, 1, 1, data_60_horizontal_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees horizontal air")
+        points_75_horizontal_air = make_points(data_75_horizontal_air[0], 0, 75, 1, 1, data_75_horizontal_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees horizontal air")
 
 
-        data_30_horizontal_mineral_oil = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_horizontal)[0]
-        data_45_horizontal_mineral_oil = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_horizontal)[1]
-        data_60_horizontal_mineral_oil = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_horizontal)[2]
-        data_75_horizontal_mineral_oil = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_horizontal)[3]
+        data_30_horizontal_water = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in water.txt", 0, 80, intensity_factor_water_horizontal)[0]
+        data_45_horizontal_water = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in water.txt", 0, 80, intensity_factor_water_horizontal)[1]
+        data_60_horizontal_water = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in water.txt", -20, 80, intensity_factor_water_horizontal)[2]
+        data_75_horizontal_water = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in water.txt", -40, 80, intensity_factor_water_horizontal)[3]
 
-        points_30_horizontal_mineral_oil = make_points(data_30_horizontal_mineral_oil[0], 0, 30, 1.461, 1, data_30_horizontal_mineral_oil[1], 405, photodiode_solid_angle, "30 degrees horizontal mineral oil")
-        points_45_horizontal_mineral_oil = make_points(data_45_horizontal_mineral_oil[0], 0, 45, 1.461, 1, data_45_horizontal_mineral_oil[1], 405, photodiode_solid_angle, "45 degrees horizontal mineral oil")
-        points_60_horizontal_mineral_oil = make_points(data_60_horizontal_mineral_oil[0], 0, 60, 1.461, 1, data_60_horizontal_mineral_oil[1], 405, photodiode_solid_angle, "60 degrees horizontal mineral oil")
-        points_75_horizontal_mineral_oil = make_points(data_75_horizontal_mineral_oil[0], 0, 75, 1.461, 1, data_75_horizontal_mineral_oil[1], 405, photodiode_solid_angle, "75 degrees horizontal mineral oil")
+        points_30_horizontal_water = make_points(data_30_horizontal_water[0], 0, 30, 1.33, 1, data_30_horizontal_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees horizontal water")
+        points_45_horizontal_water = make_points(data_45_horizontal_water[0], 0, 45, 1.33, 1, data_45_horizontal_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees horizontal water")
+        points_60_horizontal_water = make_points(data_60_horizontal_water[0], 0, 60, 1.33, 1, data_60_horizontal_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees horizontal water")
+        points_75_horizontal_water = make_points(data_75_horizontal_water[0], 0, 75, 1.33, 1, data_75_horizontal_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees horizontal water")
+
+
+        data_30_horizontal_mineral_oil = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in mineral oil.txt", 0, 80, intensity_factor_mineral_oil_horizontal)[0]
+        data_45_horizontal_mineral_oil = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in mineral oil.txt", 0, 80, intensity_factor_mineral_oil_horizontal)[1]
+        data_60_horizontal_mineral_oil = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in mineral oil.txt", -20, 80, intensity_factor_mineral_oil_horizontal)[2]
+        data_75_horizontal_mineral_oil = make_data_by_run("new_polarization_comparison_data/horizontal/75, 60, 45, and 30 in mineral oil.txt", -40, 80, intensity_factor_mineral_oil_horizontal)[3]
+
+        points_30_horizontal_mineral_oil = make_points(data_30_horizontal_mineral_oil[0], 0, 30, 1.461, 1, data_30_horizontal_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees horizontal mineral oil")
+        points_45_horizontal_mineral_oil = make_points(data_45_horizontal_mineral_oil[0], 0, 45, 1.461, 1, data_45_horizontal_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees horizontal mineral oil")
+        points_60_horizontal_mineral_oil = make_points(data_60_horizontal_mineral_oil[0], 0, 60, 1.461, 1, data_60_horizontal_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees horizontal mineral oil")
+        points_75_horizontal_mineral_oil = make_points(data_75_horizontal_mineral_oil[0], 0, 75, 1.461, 1, data_75_horizontal_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees horizontal mineral oil")
 
     vertical = True
     if vertical:
 
-        data_30_vertical_air = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_vertical)[0]
+        data_30_vertical_air = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in air.txt", 0, 80, intensity_factor_air_vertical)[0]
         data_45_vertical_air = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in air.txt", 0, 80, intensity_factor_air_vertical)[1]
-        data_60_vertical_air = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_vertical)[2]
-        data_75_vertical_air = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_vertical)[3]
+        data_60_vertical_air = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in air.txt", -20, 80, intensity_factor_air_vertical)[2]
+        data_75_vertical_air = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in air.txt", -20, 80, intensity_factor_air_vertical)[3]
         
-        points_30_vertical_air = make_points(data_30_vertical_air[0], 0, 30, 1, 0, data_30_vertical_air[1], 405, photodiode_solid_angle, "30 degrees vertical air")
-        points_45_vertical_air = make_points(data_45_vertical_air[0], 0, 45, 1, 0, data_45_vertical_air[1], 405, photodiode_solid_angle, "45 degrees vertical air")
-        points_60_vertical_air = make_points(data_60_vertical_air[0], 0, 60, 1, 0, data_60_vertical_air[1], 405, photodiode_solid_angle, "60 degrees vertical air")
-        points_75_vertical_air = make_points(data_75_vertical_air[0], 0, 75, 1, 0, data_75_vertical_air[1], 405, photodiode_solid_angle, "75 degrees vertical air")
+        points_30_vertical_air = make_points(data_30_vertical_air[0], 0, 30, 1, 0, data_30_vertical_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees vertical air")
+        points_45_vertical_air = make_points(data_45_vertical_air[0], 0, 45, 1, 0, data_45_vertical_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees vertical air")
+        points_60_vertical_air = make_points(data_60_vertical_air[0], 0, 60, 1, 0, data_60_vertical_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees vertical air")
+        points_75_vertical_air = make_points(data_75_vertical_air[0], 0, 75, 1, 0, data_75_vertical_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees vertical air")
         
 
-        data_30_vertical_water = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_vertical)[0]
-        data_45_vertical_water = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_vertical)[1]
-        data_60_vertical_water = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_vertical)[2]
-        data_75_vertical_water = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_vertical)[3]
+        data_30_vertical_water = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", 0, 80, intensity_factor_water_vertical)[0]
+        data_45_vertical_water = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", 0, 80, intensity_factor_water_vertical)[1]
+        data_60_vertical_water = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -20, 80, intensity_factor_water_vertical)[2]
+        data_75_vertical_water = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -40, 80, intensity_factor_water_vertical)[3]
 
-        points_30_vertical_water = make_points(data_30_vertical_water[0], 0, 30, 1.33, 0, data_30_vertical_water[1], 405, photodiode_solid_angle, "30 degrees vertical water")
-        points_45_vertical_water = make_points(data_45_vertical_water[0], 0, 45, 1.33, 0, data_45_vertical_water[1], 405, photodiode_solid_angle, "45 degrees vertical water")
-        points_60_vertical_water = make_points(data_60_vertical_water[0], 0, 60, 1.33, 0, data_60_vertical_water[1], 405, photodiode_solid_angle, "60 degrees vertical water")
-        points_75_vertical_water = make_points(data_75_vertical_water[0], 0, 75, 1.33, 0, data_75_vertical_water[1], 405, photodiode_solid_angle, "75 degrees vertical water")
+        points_30_vertical_water = make_points(data_30_vertical_water[0], 0, 30, 1.33, 0, data_30_vertical_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees vertical water")
+        points_45_vertical_water = make_points(data_45_vertical_water[0], 0, 45, 1.33, 0, data_45_vertical_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees vertical water")
+        points_60_vertical_water = make_points(data_60_vertical_water[0], 0, 60, 1.33, 0, data_60_vertical_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees vertical water")
+        points_75_vertical_water = make_points(data_75_vertical_water[0], 0, 75, 1.33, 0, data_75_vertical_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees vertical water")
 
 
-        data_30_vertical_mineral_oil = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_vertical)[0]
-        data_45_vertical_mineral_oil = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_mineral_oil_vertical)[1]
-        data_60_vertical_mineral_oil = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_mineral_oil_vertical)[2]
-        data_75_vertical_mineral_oil = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_mineral_oil_vertical)[3]
+        data_30_vertical_mineral_oil = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in mineral oil.txt", 0, 80, intensity_factor_mineral_oil_vertical)[0]
+        data_45_vertical_mineral_oil = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", 0, 80, intensity_factor_mineral_oil_vertical)[1]
+        data_60_vertical_mineral_oil = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -20, 80, intensity_factor_mineral_oil_vertical)[2]
+        data_75_vertical_mineral_oil = make_data_by_run("new_polarization_comparison_data/vertical/75, 60, 45, and 30 in water.txt", -40, 80, intensity_factor_mineral_oil_vertical)[3]
 
-        points_30_vertical_mineral_oil = make_points(data_30_vertical_mineral_oil[0], 0, 30, 1.461, 0, data_30_vertical_mineral_oil[1], 405, photodiode_solid_angle, "30 degrees vertical mineral oil")
-        points_45_vertical_mineral_oil = make_points(data_45_vertical_mineral_oil[0], 0, 45, 1.461, 0, data_45_vertical_mineral_oil[1], 405, photodiode_solid_angle, "45 degrees vertical mineral oil")
-        points_60_vertical_mineral_oil = make_points(data_60_vertical_mineral_oil[0], 0, 60, 1.461, 0, data_60_vertical_mineral_oil[1], 405, photodiode_solid_angle, "60 degrees vertical mineral oil")
-        points_75_vertical_mineral_oil = make_points(data_75_vertical_mineral_oil[0], 0, 75, 1.461, 0, data_75_vertical_mineral_oil[1], 405, photodiode_solid_angle, "75 degrees vertical mineral oil")
+        points_30_vertical_mineral_oil = make_points(data_30_vertical_mineral_oil[0], 0, 30, 1.461, 0, data_30_vertical_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees vertical mineral oil")
+        points_45_vertical_mineral_oil = make_points(data_45_vertical_mineral_oil[0], 0, 45, 1.461, 0, data_45_vertical_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees vertical mineral oil")
+        points_60_vertical_mineral_oil = make_points(data_60_vertical_mineral_oil[0], 0, 60, 1.461, 0, data_60_vertical_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees vertical mineral oil")
+        points_75_vertical_mineral_oil = make_points(data_75_vertical_mineral_oil[0], 0, 75, 1.461, 0, data_75_vertical_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees vertical mineral oil")
 
 
     points_air = points_30_horizontal_air + points_30_vertical_air + \
@@ -142,4 +141,78 @@ if make_all_points:
 
 plot = True
 if plot:
-    plot_with_TSTR_fit(points_45_vertical_air + points_45_horizontal_air, "Different Polarizations in Air With Slit")
+
+    #plot_with_TSTR_fit(points_30_vertical_air + points_30_horizontal_air, "Different Polarizations in Air With Slit")
+    #plot_with_TSTR_fit(points_45_vertical_air + points_45_horizontal_air, "Different Polarizations in Air With Slit")
+    plot_with_semi_empirical_fit(points_45_vertical_air + points_45_horizontal_air, "Different Polarizations in Air With Slit")
+
+
+    #plot_with_TSTR_fit(points_60_vertical_air + points_60_horizontal_air, "Different Polarizations in Air With Slit")
+    #plot_with_TSTR_fit(points_75_vertical_air + points_75_horizontal_air, "Different Polarizations in Air With Slit")
+    #plot_with_TSTR_fit(points_air, "Different Polarizations in Air With Slit")
+
+
+    """
+    #plot_points(points_30_vertical_water + points_30_horizontal_water, "Different Polarizations in water With Slit")
+    #plot_points(points_45_vertical_water + points_45_horizontal_water, "Different Polarizations in water With Slit")
+    #plot_with_TSTR_fit(points_30_vertical_water + points_30_horizontal_water, "Different Polarizations in water With Slit")
+    #plot_with_TSTR_fit(points_45_vertical_water + points_45_horizontal_water, "Different Polarizations in water With Slit")
+    plot_with_TSTR_fit(points_60_vertical_water + points_60_horizontal_water, "Different Polarizations in water With Slit")
+    plot_with_TSTR_fit(points_75_vertical_water + points_75_horizontal_water, "Different Polarizations in water With Slit")
+    plot_with_TSTR_fit(points_water, "Different Polarizations in water With Slit")
+    """
+
+    """
+    plot_points(points_30_vertical_mineral_oil + points_30_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
+    plot_points(points_45_vertical_mineral_oil + points_45_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
+    plot_points(points_60_vertical_mineral_oil + points_60_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
+    plot_points(points_75_vertical_mineral_oil + points_75_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
+    plot_points(points_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    """
+
+    """
+
+    plot_with_TSTR_fit(points_30_vertical_mineral_oil + points_30_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
+    plot_with_TSTR_fit(points_45_vertical_mineral_oil + points_45_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
+    plot_with_TSTR_fit(points_60_vertical_mineral_oil + points_60_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
+    plot_with_TSTR_fit(points_75_vertical_mineral_oil + points_75_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
+    plot_with_TSTR_fit(points_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    """
+
+    """
+    plot_with_TSTR_fit(points_30_vertical_air, "Different Polarizations in air With Slit")
+    plot_with_TSTR_fit(points_45_vertical_air, "Different Polarizations in air With Slit")
+    plot_with_TSTR_fit(points_60_vertical_air, "Different Polarizations in air With Slit")
+    plot_with_TSTR_fit(points_75_vertical_air, "Different Polarizations in air With Slit")
+
+    plot_with_TSTR_fit(points_30_vertical_water, "Different Polarizations in Water With Slit")
+    plot_with_TSTR_fit(points_45_vertical_water, "Different Polarizations in Water With Slit")
+    plot_with_TSTR_fit(points_60_vertical_water, "Different Polarizations in Water With Slit")
+    plot_with_TSTR_fit(points_75_vertical_water, "Different Polarizations in Water With Slit")
+
+    plot_with_TSTR_fit(points_30_vertical_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    plot_with_TSTR_fit(points_45_vertical_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    plot_with_TSTR_fit(points_60_vertical_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    plot_with_TSTR_fit(points_75_vertical_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    """
+
+    """
+    plot_with_TSTR_fit(points_30_horizontal_air, "Different Polarizations in air With Slit")
+    plot_with_TSTR_fit(points_45_horizontal_air, "Different Polarizations in air With Slit")
+    plot_with_TSTR_fit(points_60_horizontal_air, "Different Polarizations in air With Slit")
+    plot_with_TSTR_fit(points_75_horizontal_air, "Different Polarizations in air With Slit")
+
+    plot_with_TSTR_fit(points_30_horizontal_water, "Different Polarizations in Water With Slit")
+    plot_with_TSTR_fit(points_45_horizontal_water, "Different Polarizations in Water With Slit")
+    plot_with_TSTR_fit(points_60_horizontal_water, "Different Polarizations in Water With Slit")
+    plot_with_TSTR_fit(points_75_horizontal_water, "Different Polarizations in Water With Slit")
+
+    plot_with_TSTR_fit(points_30_horizontal_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    plot_with_TSTR_fit(points_45_horizontal_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    plot_with_TSTR_fit(points_60_horizontal_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    plot_with_TSTR_fit(points_75_horizontal_mineral_oil, "Different Polarizations in mineral_oil With Slit")
+    """
+
+
+
+
