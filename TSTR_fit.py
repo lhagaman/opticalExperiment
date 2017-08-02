@@ -228,6 +228,20 @@ def fit_parameters(points):
     return [np.exp(fit_params[0]), np.exp(fit_params)[1] + 1, np.exp(fit_params[2])]
 
 
+# fits parameters, uses standard deviations
+def fit_std(points):
+    independent_variables_array = []
+    intensity_array = []
+    std_array = []
+    for point in points:
+        independent_variables_array.append([point.theta_r_in_degrees, point.phi_r_in_degrees, point.theta_i_in_degrees, point.n_0, point.polarization])
+        intensity_array.append(point.intensity)
+        std_array.append(point.std)
+    # initial parameters are the ones found in the paper
+    fit_params = scipy.optimize.curve_fit(fitter, independent_variables_array, intensity_array, p0=[np.log(0.5), np.log(1.5 - 1), np.log(0.05)], sigma=std_array)[0]
+    return [np.exp(fit_params[0]), np.exp(fit_params)[1] + 1, np.exp(fit_params[2])]
+
+
 def change_theta_i(points, new_theta_i):
     new_points = points[:]
     for point in new_points:

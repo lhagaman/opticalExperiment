@@ -768,6 +768,7 @@ def TSTR_predict(points_used_for_fit, predicted_points, title):
     return
 
 
+# returns a list of points from one run of data
 def make_points(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity_array,
                  wavelength, photodiode_solid_angle, photodiode_angular_width, run_name):
     points = []
@@ -777,6 +778,40 @@ def make_points(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, 
         intensity = intensity_array[i]
         point = Point(theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity,
                  wavelength, photodiode_solid_angle, photodiode_angular_width, run_name)
+        points.append(point)
+    return points
+
+
+# returns a list of points from multiple runs of data, finds average and standard deviation
+def make_points_std(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity_array,
+                 wavelength, photodiode_solid_angle, photodiode_angular_width, run_name):
+
+    theta_r_list = []
+    for theta_r in theta_r_in_degrees_array:
+        if theta_r not in theta_r_list:
+            theta_r_list.append(theta_r)
+
+    # list where the ith element is a list of intensities for the ith theta_r in theta_r_list
+    intensities_by_theta_r = []
+    for i in theta_r_list:
+        intensities_by_theta_r.append([])
+    for i in range(len(theta_r_in_degrees_array)):
+        pos = theta_r_in_degrees_array.index(theta_r_in_degrees_array[i])
+        intensities_by_theta_r[pos].append(intensity_array[i])
+
+    std_array = []
+    intensity_averages = []
+    for intensity_list in intensities_by_theta_r:
+        std_array.append(np.std(intensity_list))
+        intensity_averages.append(np.average(intensity_list))
+
+    points = []
+    numpoints = len(intensity_averages)
+    for i in range(numpoints):
+        theta_r_in_degrees = theta_r_list[i]
+        intensity = intensity_averages[i]
+        std = std_array[i]
+        point = Point(theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity, wavelength, photodiode_solid_angle, photodiode_angular_width, run_name, std)
         points.append(point)
     return points
 
@@ -792,9 +827,33 @@ def make_data_by_run(filename, lower_cutoff, upper_cutoff, intensity_factor=1):
         if i == 0 or data[i][0] < data[i - 1][0]:
             data_by_run.append([[], []])
         if lower_cutoff <= data[i][0] <= upper_cutoff:
-            data_by_run[-1][0].append(np.round(data[i][0], 2))
+            data_by_run[-1][0].append(np.round(data[i][0], 3))
             data_by_run[-1][1].append(intensity_factor * data[i][1])
     return data_by_run
+
+
+# returns a list of xdata and a list of ydata
+def make_data_all_runs(filename, lower_cutoff, upper_cutoff, intensity_factor=1):
+    data = np.loadtxt(filename, skiprows=1)
+    x_data = []
+    y_data = []
+
+    # this part assumes that if it's less than a fifth of a degree, its an eight of a degree
+    if data[1][0] - data[1][1] < 0.2:
+        def my_round(x):
+            return np.round(x * 8.) / 8.
+    elif data[1][0] - data[1][1] < 0.3:
+        def my_round(x):
+            return np.round(x * 4.) / 4.
+    else:
+        def my_round(x):
+            return np.round(x, 1)
+
+    for i in range(len(data)):
+        if lower_cutoff <= data[i][0] <= upper_cutoff:
+            x_data.append(my_round(data[i][0]))
+            y_data.append(intensity_factor * data[i][1])
+    return [x_data, y_data]
 
 
 def plot_points(points, title):
@@ -859,5 +918,196 @@ def plot_points(points, title):
         plt.ylabel("intensity (flux/str)/(input flux)")
 
     plt.show()
+
+
+def plot_points_error_bars(points, title):
+    one_pass_x_data = []
+    run_name_list = []
+    points_by_run_name = []
+    for point in points:
+        if point.theta_r_in_degrees not in one_pass_x_data:
+            one_pass_x_data.append(point.theta_r_in_degrees)
+        if point.run_name not in run_name_list:
+            run_name_list.append(point.run_name)
+            points_by_run_name.append([point])
+        else:
+            index = 0.5  # to error if not overridden
+            for i in range(len(run_name_list)):
+                run_name = run_name_list[i]
+                if point.run_name == run_name:
+                    index = i
+            points_by_run_name[index].append(point)
+
+    # make a plot for each angle
+    for i in range(len(run_name_list)):
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+        theta_i_in_degrees = points[0].theta_i_in_degrees
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+        err = [point.std for point in points]
+
+        max_y = max(y_data)
+
+        plt.figure()
+        plt.title(run_name)
+        plt.scatter(x_data, y_data, color="r", s=2, label="experimental")
+        plt.errorbar(x_data, y_data, yerr=err, linestyle="None")
+
+        string = "theta_i: " + str(theta_i_in_degrees)
+
+        axes = plt.gca()
+        axes.set_ylim([0, 1.2 * max_y])
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("intensity (flux/str)/(input flux)")
+        plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
+
+    max_y = 0
+    plt.figure()
+    for i in range(len(run_name_list)):
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+        err = [point.std for point in points]
+
+        current_max_y = max(y_data)
+        max_y = max([max_y, current_max_y])
+
+        plt.title(title)
+        plt.scatter(x_data, y_data, s=2, label=run_name)
+        plt.errorbar(x_data, y_data, yerr=err, linestyle="None")
+
+        axes = plt.gca()
+        axes.set_ylim([0, 1.2 * max_y])
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("intensity (flux/str)/(input flux)")
+
+    plt.show()
+
+
+def plot_TSTR_fit_error_bars_no_show(points, title):
+    color_list = ["r", "g", "b", "m", "c", "y", "k"]
+
+    one_pass_x_data = []
+    run_name_list = []
+    points_by_run_name = []
+    for point in points:
+        if point.theta_r_in_degrees not in one_pass_x_data:
+            one_pass_x_data.append(point.theta_r_in_degrees)
+        if point.run_name not in run_name_list:
+            run_name_list.append(point.run_name)
+            points_by_run_name.append([point])
+        else:
+            index = 0.5  # to error if not overridden
+            for i in range(len(run_name_list)):
+                run_name = run_name_list[i]
+                if point.run_name == run_name:
+                    index = i
+            points_by_run_name[index].append(point)
+
+    max_y = 0
+    plt.figure()
+    for i in range(len(run_name_list)):
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+        n_0 = points[0].n_0
+        polarization = points[0].polarization
+        theta_i_in_degrees = points[0].theta_i_in_degrees
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+        err = [point.std for point in points]
+
+        current_max_y = max(y_data)
+        max_y = max([max_y, current_max_y])
+
+        plt.title(title)
+        plt.errorbar(x_data, y_data, yerr=err, linestyle="None", c=color_list[i])
+
+        fit = TSTR_fit.fit_std(points)
+
+        TSTR_y = TSTR_fit.BRIDF_plotter(one_pass_x_data, 0, theta_i_in_degrees, n_0, polarization, fit)
+
+        plt.plot(one_pass_x_data, TSTR_y, label=run_name, c=color_list[i])
+
+        rho_L = fit[0]
+        n = fit[1]
+        gamma = fit[2]
+
+        string = str(run_name) + ":\nrho_L: " + str(rho_L) + "\nn: " + str(n) + "\ngamma: " + str(gamma)
+
+        axes = plt.gca()
+        axes.set_ylim([0, 1.2 * max_y])
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("intensity (flux/str)/(input flux)")
+
+        plt.annotate(string, xy=(0.05, 0.8 - i / 10.), xycoords='axes fraction', size=6)
+
+
+def plot_TSTR_fit_one_set_of_parameters(points, parameters, title):
+    color_list = ["r", "g", "b", "m", "c", "y", "k"]
+
+    one_pass_x_data = []
+    run_name_list = []
+    points_by_run_name = []
+    for point in points:
+        if point.theta_r_in_degrees not in one_pass_x_data:
+            one_pass_x_data.append(point.theta_r_in_degrees)
+        if point.run_name not in run_name_list:
+            run_name_list.append(point.run_name)
+            points_by_run_name.append([point])
+        else:
+            index = 0.5  # to error if not overridden
+            for i in range(len(run_name_list)):
+                run_name = run_name_list[i]
+                if point.run_name == run_name:
+                    index = i
+            points_by_run_name[index].append(point)
+
+    max_y = 0
+    plt.figure()
+    for i in range(len(run_name_list)):
+        run_name = run_name_list[i]
+        points = points_by_run_name[i]
+
+        n_0 = points[0].n_0
+        polarization = points[0].polarization
+        theta_i_in_degrees = points[0].theta_i_in_degrees
+
+        x_data = [point.theta_r_in_degrees for point in points]
+        y_data = [point.intensity for point in points]
+        err = [point.std for point in points]
+
+        current_max_y = max(y_data)
+        max_y = max([max_y, current_max_y])
+
+        plt.title(title)
+        plt.errorbar(x_data, y_data, yerr=err, linestyle="None", c=color_list[i])
+
+        TSTR_y = TSTR_fit.BRIDF_plotter(one_pass_x_data, 0, theta_i_in_degrees, n_0, polarization, parameters)
+
+        plt.plot(one_pass_x_data, TSTR_y, label=run_name, c=color_list[i])
+
+        rho_L = parameters[0]
+        n = parameters[1]
+        gamma = parameters[2]
+
+        string = "theta_i: " + str(theta_i_in_degrees) + "\nrho_L: " + str(rho_L) + "\nn: " + str(n) + "\ngamma: " + str(gamma)
+
+        axes = plt.gca()
+        axes.set_ylim([0, 1.2 * max_y])
+        plt.legend()
+        plt.xlabel("viewing angle (degrees)")
+        plt.ylabel("intensity (flux/str)/(input flux)")
+
+        plt.annotate(string, xy=(0.05, 0.8), xycoords='axes fraction', size=10)
+
+
 
 
