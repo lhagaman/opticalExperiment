@@ -832,6 +832,22 @@ def make_data_by_run(filename, lower_cutoff, upper_cutoff, intensity_factor=1):
     return data_by_run
 
 
+# returns a list of runs which each consist of a list of x_data and a list of y_data
+def make_data_by_run_angles_count_down(filename, lower_cutoff, upper_cutoff, intensity_factor=1):
+
+    data = np.loadtxt(filename, skiprows=1)
+    data_by_run = []
+
+    for i in range(len(data)):
+        # if the x_data decreases (new run)
+        if i == 0 or data[i][0] > data[i - 1][0]:
+            data_by_run.append([[], []])
+        if lower_cutoff <= data[i][0] <= upper_cutoff:
+            data_by_run[-1][0].append(np.round(data[i][0], 3))
+            data_by_run[-1][1].append(intensity_factor * data[i][1])
+    return data_by_run
+
+
 # returns a list of xdata and a list of ydata
 def make_data_all_runs(filename, lower_cutoff, upper_cutoff, intensity_factor=1):
     data = np.loadtxt(filename, skiprows=1)
@@ -856,7 +872,7 @@ def make_data_all_runs(filename, lower_cutoff, upper_cutoff, intensity_factor=1)
     return [x_data, y_data]
 
 
-def plot_points(points, title):
+def plot_points(points, title, incude_individual_plots=False):
     one_pass_x_data = []
     run_name_list = []
     points_by_run_name = []
@@ -874,31 +890,34 @@ def plot_points(points, title):
                     index = i
             points_by_run_name[index].append(point)
 
-    # make a plot for each angle
-    for i in range(len(run_name_list)):
-        run_name = run_name_list[i]
-        points = points_by_run_name[i]
-        theta_i_in_degrees = points[0].theta_i_in_degrees
+    if incude_individual_plots:
+        # make a plot for each angle
+        for i in range(len(run_name_list)):
+            run_name = run_name_list[i]
+            points = points_by_run_name[i]
+            theta_i_in_degrees = points[0].theta_i_in_degrees
 
-        x_data = [point.theta_r_in_degrees for point in points]
-        y_data = [point.intensity for point in points]
+            x_data = [point.theta_r_in_degrees for point in points]
+            y_data = [point.intensity for point in points]
 
-        max_y = max(y_data)
+            max_y = max(y_data)
 
-        plt.figure()
-        plt.title(run_name)
-        plt.scatter(x_data, y_data, color="r", s=2, label="experimental")
+            plt.figure()
+            plt.title(run_name)
+            plt.scatter(x_data, y_data, color="r", s=2, label="experimental")
 
-        string = "theta_i: " + str(theta_i_in_degrees)
+            string = "theta_i: " + str(theta_i_in_degrees)
 
-        axes = plt.gca()
-        axes.set_ylim([0, 1.2 * max_y])
-        plt.legend()
-        plt.xlabel("viewing angle (degrees)")
-        plt.ylabel("intensity (flux/str)/(input flux)")
-        plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
+            axes = plt.gca()
+            axes.set_ylim([0, 1.2 * max_y])
+            plt.legend()
+            plt.xlabel("viewing angle (degrees)")
+            plt.ylabel("intensity (flux/str)/(input flux)")
+            plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
 
     plt.figure()
+
+    max_y = 0
     for i in range(len(run_name_list)):
         run_name = run_name_list[i]
         points = points_by_run_name[i]
@@ -906,7 +925,8 @@ def plot_points(points, title):
         x_data = [point.theta_r_in_degrees for point in points]
         y_data = [point.intensity for point in points]
 
-        max_y = max(y_data)
+        current_max_y = max(y_data)
+        max_y = max([max_y, current_max_y])
 
         plt.title(title)
         plt.scatter(x_data, y_data, s=2, label=run_name)
@@ -952,8 +972,7 @@ def plot_points_error_bars(points, title):
 
         plt.figure()
         plt.title(run_name)
-        plt.scatter(x_data, y_data, color="r", s=2, label="experimental")
-        plt.errorbar(x_data, y_data, yerr=err, linestyle="None")
+        plt.errorbar(x_data, y_data, yerr=err, linestyle="None", label=run_name)
 
         string = "theta_i: " + str(theta_i_in_degrees)
 
@@ -978,8 +997,7 @@ def plot_points_error_bars(points, title):
         max_y = max([max_y, current_max_y])
 
         plt.title(title)
-        plt.scatter(x_data, y_data, s=2, label=run_name)
-        plt.errorbar(x_data, y_data, yerr=err, linestyle="None")
+        plt.errorbar(x_data, y_data, yerr=err, linestyle="None", label=run_name)
 
         axes = plt.gca()
         axes.set_ylim([0, 1.2 * max_y])
@@ -1049,9 +1067,8 @@ def plot_TSTR_fit_error_bars_no_show(points, title):
 
         plt.annotate(string, xy=(0.05, 0.8 - i / 10.), xycoords='axes fraction', size=6)
 
-
 def plot_TSTR_fit_one_set_of_parameters(points, parameters, title):
-    color_list = ["r", "g", "b", "m", "c", "y", "k"]
+    color_list = ["r", "g", "b", "m", "c", "y", "k", "violet", "darkviolet", "teal"]
 
     one_pass_x_data = []
     run_name_list = []
@@ -1082,13 +1099,18 @@ def plot_TSTR_fit_one_set_of_parameters(points, parameters, title):
 
         x_data = [point.theta_r_in_degrees for point in points]
         y_data = [point.intensity for point in points]
-        err = [point.std for point in points]
+        if points[0].std != None:
+            err = [point.std for point in points]
+            plt.errorbar(x_data, y_data, yerr=err, linestyle="None", c=color_list[i])
+        else:
+            plt.scatter(x_data, y_data, s=2, c=color_list[i])
 
         current_max_y = max(y_data)
         max_y = max([max_y, current_max_y])
 
         plt.title(title)
-        plt.errorbar(x_data, y_data, yerr=err, linestyle="None", c=color_list[i])
+
+        one_pass_x_data = sorted(one_pass_x_data)
 
         TSTR_y = TSTR_fit.BRIDF_plotter(one_pass_x_data, 0, theta_i_in_degrees, n_0, polarization, parameters)
 
@@ -1098,15 +1120,18 @@ def plot_TSTR_fit_one_set_of_parameters(points, parameters, title):
         n = parameters[1]
         gamma = parameters[2]
 
-        string = "theta_i: " + str(theta_i_in_degrees) + "\nrho_L: " + str(rho_L) + "\nn: " + str(n) + "\ngamma: " + str(gamma)
+        string = "\nrho_L: " + str(rho_L) + "\nn: " + str(n) + "\ngamma: " + str(gamma)
 
         axes = plt.gca()
         axes.set_ylim([0, 1.2 * max_y])
+        axes.set_yscale("log", nonposy='clip')
+
         plt.legend()
         plt.xlabel("viewing angle (degrees)")
         plt.ylabel("intensity (flux/str)/(input flux)")
 
-        plt.annotate(string, xy=(0.05, 0.8), xycoords='axes fraction', size=10)
+        plt.annotate(string, xy=(0.05, 0.4), xycoords='axes fraction', size=10)
+    plt.show()
 
 
 

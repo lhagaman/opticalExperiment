@@ -1,6 +1,6 @@
 class Point:
     def __init__(self, theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity,
-                 wavelength, photodiode_solid_angle, photodiode_angular_width, run_name, std=0):
+                 wavelength, photodiode_solid_angle, photodiode_angular_width, run_name, std=None):
         # reflected angle projected to plane of incidence
         self.theta_r_in_degrees = theta_r_in_degrees
         # reflected angle from plane of incidence

@@ -24,7 +24,7 @@ photodiode_area = photodiode_height * photodiode_width
 
 photodiode_solid_angle = photodiode_area / np.power(distance_from_sample_to_photodiode, 2)
 
-make_all_points = False
+make_all_points = True
 if make_all_points:
     # these are all in air through the tube, they correct for the polarizer and possible polarization of the laser
     flux_i_with_polarizer_horizontal = 0.0018 * 100e-6
@@ -71,10 +71,10 @@ if make_all_points:
         data_60_horizontal_air = make_data_by_run("horizontal_7_18/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_horizontal)[2]
         data_75_horizontal_air = make_data_by_run("horizontal_7_18/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_horizontal)[3]
 
-        points_30_horizontal_air = make_points(data_30_horizontal_air[0], 0, 30, 1, 1, data_30_horizontal_air[1], 405, photodiode_solid_angle, "30 degrees horizontal air")
-        points_45_horizontal_air = make_points(data_45_horizontal_air[0], 0, 45, 1, 1, data_45_horizontal_air[1], 405, photodiode_solid_angle, "45 degrees horizontal air")
-        points_60_horizontal_air = make_points(data_60_horizontal_air[0], 0, 60, 1, 1, data_60_horizontal_air[1], 405, photodiode_solid_angle, "60 degrees horizontal air")
-        points_75_horizontal_air = make_points(data_75_horizontal_air[0], 0, 75, 1, 1, data_75_horizontal_air[1], 405, photodiode_solid_angle, "75 degrees horizontal air")
+        points_30_horizontal_air = make_points(data_30_horizontal_air[0], 0, 30, 1, 1, data_30_horizontal_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees horizontal air")
+        points_45_horizontal_air = make_points(data_45_horizontal_air[0], 0, 45, 1, 1, data_45_horizontal_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees horizontal air")
+        points_60_horizontal_air = make_points(data_60_horizontal_air[0], 0, 60, 1, 1, data_60_horizontal_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees horizontal air")
+        points_75_horizontal_air = make_points(data_75_horizontal_air[0], 0, 75, 1, 1, data_75_horizontal_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees horizontal air")
 
 
         data_30_horizontal_water = make_data_by_run("horizontal_7_18/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_horizontal)[0]
@@ -82,10 +82,10 @@ if make_all_points:
         data_60_horizontal_water = make_data_by_run("horizontal_7_18/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_horizontal)[2]
         data_75_horizontal_water = make_data_by_run("horizontal_7_18/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_horizontal)[3]
 
-        points_30_horizontal_water = make_points(data_30_horizontal_water[0], 0, 30, 1.33, 1, data_30_horizontal_water[1], 405, photodiode_solid_angle, "30 degrees horizontal water")
-        points_45_horizontal_water = make_points(data_45_horizontal_water[0], 0, 45, 1.33, 1, data_45_horizontal_water[1], 405, photodiode_solid_angle, "45 degrees horizontal water")
-        points_60_horizontal_water = make_points(data_60_horizontal_water[0], 0, 60, 1.33, 1, data_60_horizontal_water[1], 405, photodiode_solid_angle, "60 degrees horizontal water")
-        points_75_horizontal_water = make_points(data_75_horizontal_water[0], 0, 75, 1.33, 1, data_75_horizontal_water[1], 405, photodiode_solid_angle, "75 degrees horizontal water")
+        points_30_horizontal_water = make_points(data_30_horizontal_water[0], 0, 30, 1.33, 1, data_30_horizontal_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees horizontal water")
+        points_45_horizontal_water = make_points(data_45_horizontal_water[0], 0, 45, 1.33, 1, data_45_horizontal_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees horizontal water")
+        points_60_horizontal_water = make_points(data_60_horizontal_water[0], 0, 60, 1.33, 1, data_60_horizontal_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees horizontal water")
+        points_75_horizontal_water = make_points(data_75_horizontal_water[0], 0, 75, 1.33, 1, data_75_horizontal_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees horizontal water")
 
 
         data_30_horizontal_mineral_oil = make_data_by_run("horizontal_7_18/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_horizontal)[0]
@@ -93,10 +93,10 @@ if make_all_points:
         data_60_horizontal_mineral_oil = make_data_by_run("horizontal_7_18/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_horizontal)[2]
         data_75_horizontal_mineral_oil = make_data_by_run("horizontal_7_18/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_horizontal)[3]
 
-        points_30_horizontal_mineral_oil = make_points(data_30_horizontal_mineral_oil[0], 0, 30, 1.461, 1, data_30_horizontal_mineral_oil[1], 405, photodiode_solid_angle, "30 degrees horizontal mineral oil")
-        points_45_horizontal_mineral_oil = make_points(data_45_horizontal_mineral_oil[0], 0, 45, 1.461, 1, data_45_horizontal_mineral_oil[1], 405, photodiode_solid_angle, "45 degrees horizontal mineral oil")
-        points_60_horizontal_mineral_oil = make_points(data_60_horizontal_mineral_oil[0], 0, 60, 1.461, 1, data_60_horizontal_mineral_oil[1], 405, photodiode_solid_angle, "60 degrees horizontal mineral oil")
-        points_75_horizontal_mineral_oil = make_points(data_75_horizontal_mineral_oil[0], 0, 75, 1.461, 1, data_75_horizontal_mineral_oil[1], 405, photodiode_solid_angle, "75 degrees horizontal mineral oil")
+        points_30_horizontal_mineral_oil = make_points(data_30_horizontal_mineral_oil[0], 0, 30, 1.461, 1, data_30_horizontal_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees horizontal mineral oil")
+        points_45_horizontal_mineral_oil = make_points(data_45_horizontal_mineral_oil[0], 0, 45, 1.461, 1, data_45_horizontal_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees horizontal mineral oil")
+        points_60_horizontal_mineral_oil = make_points(data_60_horizontal_mineral_oil[0], 0, 60, 1.461, 1, data_60_horizontal_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees horizontal mineral oil")
+        points_75_horizontal_mineral_oil = make_points(data_75_horizontal_mineral_oil[0], 0, 75, 1.461, 1, data_75_horizontal_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees horizontal mineral oil")
 
     vertical = True
     if vertical:
@@ -106,10 +106,10 @@ if make_all_points:
         data_60_vertical_air = make_data_by_run("vertical_7_18/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_vertical)[2]
         data_75_vertical_air = make_data_by_run("vertical_7_18/75, 60, 45, and 30 in air.txt", -90, 90, intensity_factor_air_vertical)[3]
         
-        points_30_vertical_air = make_points(data_30_vertical_air[0], 0, 30, 1, 0, data_30_vertical_air[1], 405, photodiode_solid_angle, "30 degrees vertical air")
-        points_45_vertical_air = make_points(data_45_vertical_air[0], 0, 45, 1, 0, data_45_vertical_air[1], 405, photodiode_solid_angle, "45 degrees vertical air")
-        points_60_vertical_air = make_points(data_60_vertical_air[0], 0, 60, 1, 0, data_60_vertical_air[1], 405, photodiode_solid_angle, "60 degrees vertical air")
-        points_75_vertical_air = make_points(data_75_vertical_air[0], 0, 75, 1, 0, data_75_vertical_air[1], 405, photodiode_solid_angle, "75 degrees vertical air")
+        points_30_vertical_air = make_points(data_30_vertical_air[0], 0, 30, 1, 0, data_30_vertical_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees vertical air")
+        points_45_vertical_air = make_points(data_45_vertical_air[0], 0, 45, 1, 0, data_45_vertical_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees vertical air")
+        points_60_vertical_air = make_points(data_60_vertical_air[0], 0, 60, 1, 0, data_60_vertical_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees vertical air")
+        points_75_vertical_air = make_points(data_75_vertical_air[0], 0, 75, 1, 0, data_75_vertical_air[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees vertical air")
         
 
         data_30_vertical_water = make_data_by_run("vertical_7_18/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_vertical)[0]
@@ -117,10 +117,10 @@ if make_all_points:
         data_60_vertical_water = make_data_by_run("vertical_7_18/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_vertical)[2]
         data_75_vertical_water = make_data_by_run("vertical_7_18/75, 60, 45, and 30 in water.txt", -90, 90, intensity_factor_water_vertical)[3]
 
-        points_30_vertical_water = make_points(data_30_vertical_water[0], 0, 30, 1.33, 0, data_30_vertical_water[1], 405, photodiode_solid_angle, "30 degrees vertical water")
-        points_45_vertical_water = make_points(data_45_vertical_water[0], 0, 45, 1.33, 0, data_45_vertical_water[1], 405, photodiode_solid_angle, "45 degrees vertical water")
-        points_60_vertical_water = make_points(data_60_vertical_water[0], 0, 60, 1.33, 0, data_60_vertical_water[1], 405, photodiode_solid_angle, "60 degrees vertical water")
-        points_75_vertical_water = make_points(data_75_vertical_water[0], 0, 75, 1.33, 0, data_75_vertical_water[1], 405, photodiode_solid_angle, "75 degrees vertical water")
+        points_30_vertical_water = make_points(data_30_vertical_water[0], 0, 30, 1.33, 0, data_30_vertical_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees vertical water")
+        points_45_vertical_water = make_points(data_45_vertical_water[0], 0, 45, 1.33, 0, data_45_vertical_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees vertical water")
+        points_60_vertical_water = make_points(data_60_vertical_water[0], 0, 60, 1.33, 0, data_60_vertical_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees vertical water")
+        points_75_vertical_water = make_points(data_75_vertical_water[0], 0, 75, 1.33, 0, data_75_vertical_water[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees vertical water")
 
 
         data_30_vertical_mineral_oil = make_data_by_run("vertical_7_18/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_vertical)[0]
@@ -128,10 +128,10 @@ if make_all_points:
         data_60_vertical_mineral_oil = make_data_by_run("vertical_7_18/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_vertical)[2]
         data_75_vertical_mineral_oil = make_data_by_run("vertical_7_18/75, 60, 45, and 30 in mineral oil.txt", -90, 90, intensity_factor_mineral_oil_vertical)[3]
 
-        points_30_vertical_mineral_oil = make_points(data_30_vertical_mineral_oil[0], 0, 30, 1.461, 0, data_30_vertical_mineral_oil[1], 405, photodiode_solid_angle, "30 degrees vertical mineral oil")
-        points_45_vertical_mineral_oil = make_points(data_45_vertical_mineral_oil[0], 0, 45, 1.461, 0, data_45_vertical_mineral_oil[1], 405, photodiode_solid_angle, "45 degrees vertical mineral oil")
-        points_60_vertical_mineral_oil = make_points(data_60_vertical_mineral_oil[0], 0, 60, 1.461, 0, data_60_vertical_mineral_oil[1], 405, photodiode_solid_angle, "60 degrees vertical mineral oil")
-        points_75_vertical_mineral_oil = make_points(data_75_vertical_mineral_oil[0], 0, 75, 1.461, 0, data_75_vertical_mineral_oil[1], 405, photodiode_solid_angle, "75 degrees vertical mineral oil")
+        points_30_vertical_mineral_oil = make_points(data_30_vertical_mineral_oil[0], 0, 30, 1.461, 0, data_30_vertical_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "30 degrees vertical mineral oil")
+        points_45_vertical_mineral_oil = make_points(data_45_vertical_mineral_oil[0], 0, 45, 1.461, 0, data_45_vertical_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "45 degrees vertical mineral oil")
+        points_60_vertical_mineral_oil = make_points(data_60_vertical_mineral_oil[0], 0, 60, 1.461, 0, data_60_vertical_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "60 degrees vertical mineral oil")
+        points_75_vertical_mineral_oil = make_points(data_75_vertical_mineral_oil[0], 0, 75, 1.461, 0, data_75_vertical_mineral_oil[1], 405, photodiode_solid_angle, photodiode_angular_width, "75 degrees vertical mineral oil")
 
 
     points_air = points_30_horizontal_air + points_30_vertical_air + \
@@ -151,6 +151,6 @@ if make_all_points:
 
     all_points = points_air + points_water + points_mineral_oil
 
-plot = False
+plot = True
 if plot:
     plot_with_TSTR_fit(points_45_vertical_air + points_45_horizontal_air, "Different Polarizations in Air With Slit")

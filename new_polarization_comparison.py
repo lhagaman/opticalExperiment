@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Point import Point
 import TSTR_fit
-from plotting import plot_with_TSTR_fit, make_points, make_data_by_run, plot_with_TSTR_fit_and_fitted_angles, plot_points, plot_with_semi_empirical_fit
+from plotting import plot_TSTR_fit_one_set_of_parameters, plot_with_TSTR_fit, make_points, make_data_by_run, plot_with_TSTR_fit_and_fitted_angles, plot_points, plot_with_semi_empirical_fit
 
 # in inches
 distance_from_sample_to_photodiode = 5.435
@@ -142,9 +142,24 @@ if make_all_points:
 plot = True
 if plot:
 
+    fit = TSTR_fit.fit_parameters(points_30_horizontal_air + points_30_vertical_air + \
+                 points_45_horizontal_air + points_45_vertical_air + \
+                 points_60_horizontal_air + points_60_vertical_air)
+
+    plot_TSTR_fit_one_set_of_parameters(points_30_horizontal_air + points_45_horizontal_air + points_60_horizontal_air, fit, "Air Horizontal")
+    plot_TSTR_fit_one_set_of_parameters(points_30_vertical_air + points_45_vertical_air + points_60_vertical_air, fit, "Air Vertical")
+
+    plot_TSTR_fit_one_set_of_parameters(points_30_horizontal_water + points_45_horizontal_water + points_60_horizontal_water, fit, "Water Horizontal")
+    plot_TSTR_fit_one_set_of_parameters(points_30_vertical_water + points_45_vertical_water + points_60_vertical_water, fit, "Water Vertical")
+
+    plot_TSTR_fit_one_set_of_parameters(points_30_horizontal_mineral_oil + points_45_horizontal_mineral_oil + points_60_horizontal_mineral_oil, fit, "Mineral Oil Horizontal")
+    plot_TSTR_fit_one_set_of_parameters(points_30_vertical_mineral_oil + points_45_vertical_mineral_oil + points_60_vertical_mineral_oil, fit, "Mineral Oil Vertical")
+
+    plt.show()
+
     #plot_with_TSTR_fit(points_30_vertical_air + points_30_horizontal_air, "Different Polarizations in Air With Slit")
     #plot_with_TSTR_fit(points_45_vertical_air + points_45_horizontal_air, "Different Polarizations in Air With Slit")
-    plot_with_semi_empirical_fit(points_45_vertical_air + points_45_horizontal_air, "Different Polarizations in Air With Slit")
+    #plot_with_TSTR_fit(points_45_vertical_air + points_45_horizontal_air, "Different Polarizations in Air With Slit")
 
 
     #plot_with_TSTR_fit(points_60_vertical_air + points_60_horizontal_air, "Different Polarizations in Air With Slit")
