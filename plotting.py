@@ -523,7 +523,7 @@ def plot_with_reff_polynomial_fit(points):
     plt.show()
 
 
-def plot_with_TSTR_fit(points, title):
+def plot_with_TSTR_fit(points, title, make_individual_plots=False, log=True):
     one_pass_x_data = []
     run_name_list = []
     points_by_run_name = []
@@ -546,44 +546,49 @@ def plot_with_TSTR_fit(points, title):
 
     TSTR_parameters = TSTR_fit.fit_parameters(points)
 
-    # make a plot for each angle
-    for i in range(len(run_name_list)):
+    if make_individual_plots:
 
-        run_name = run_name_list[i]
-        points = points_by_run_name[i]
-        n_0 = points[0].n_0
-        polarization = points[0].polarization
-        theta_i_in_degrees = points[0].theta_i_in_degrees
+        # make a plot for each angle
+        for i in range(len(run_name_list)):
 
-        x_data = [point.theta_r_in_degrees for point in points]
-        y_data = [point.intensity for point in points]
+            run_name = run_name_list[i]
+            points = points_by_run_name[i]
+            n_0 = points[0].n_0
+            polarization = points[0].polarization
+            theta_i_in_degrees = points[0].theta_i_in_degrees
 
-        max_y = max(y_data)
+            x_data = [point.theta_r_in_degrees for point in points]
+            y_data = [point.intensity for point in points]
 
-        TSTR_y = TSTR_fit.BRIDF_plotter(one_pass_x_data,
-                                        phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, TSTR_parameters)
+            max_y = max(y_data)
+
+            TSTR_y = TSTR_fit.BRIDF_plotter(one_pass_x_data,
+                                            phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, TSTR_parameters)
+
+            plt.figure()
+            plt.title(run_name)
+            plt.scatter(x_data, y_data, color="r", s=2, label="experimental")
+            plt.plot(one_pass_x_data, TSTR_y, label="TSTR Fit")
+
+            rho_L = TSTR_parameters[0]
+            n = TSTR_parameters[1]
+            gamma = TSTR_parameters[2]
+
+            string = "theta_i: " + str(theta_i_in_degrees) + "\n\nTSTR Parameters:\nrho_L: " + \
+                     str(rho_L) + "\nn: " + str(n) + "\ngamma: " + str(gamma)
+
+            axes = plt.gca()
+            axes.set_ylim([0, 1.2 * max_y])
+            if log:
+                axes.set_yscale("log", nonposy='clip')
+            plt.legend()
+            plt.xlabel("viewing angle (degrees)")
+            plt.ylabel("intensity (flux/str)/(input flux)")
+            plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
 
         plt.figure()
-        plt.title(run_name)
-        plt.scatter(x_data, y_data, color="r", s=2, label="experimental")
-        plt.plot(one_pass_x_data, TSTR_y, label="TSTR Fit")
 
-        rho_L = TSTR_parameters[0]
-        n = TSTR_parameters[1]
-        gamma = TSTR_parameters[2]
-
-        string = "theta_i: " + str(theta_i_in_degrees) + "\n\nTSTR Parameters:\nrho_L: " + \
-                 str(rho_L) + "\nn: " + str(n) + "\ngamma: " + str(gamma)
-
-        axes = plt.gca()
-        axes.set_ylim([0, 1.2 * max_y])
-        plt.legend()
-        plt.xlabel("viewing angle (degrees)")
-        plt.ylabel("intensity (flux/str)/(input flux)")
-        plt.annotate(string, xy=(0.05, 0.6), xycoords='axes fraction', size=6)
-
-    plt.figure()
-
+    current_min_y = 1000
     current_max_y = 0
     for i in range(len(run_name_list)):
         run_name = run_name_list[i]
@@ -595,6 +600,7 @@ def plot_with_TSTR_fit(points, title):
         x_data = [point.theta_r_in_degrees for point in points]
         y_data = [point.intensity for point in points]
 
+        current_min_y = min(current_min_y, min(y_data))
         current_max_y = max(current_max_y, max(y_data))
 
         TSTR_y = TSTR_fit.BRIDF_plotter(one_pass_x_data,
@@ -605,7 +611,9 @@ def plot_with_TSTR_fit(points, title):
 
     plt.title(title)
     axes = plt.gca()
-    axes.set_ylim([0, 1.2 * current_max_y])
+    axes.set_ylim([current_min_y, 1.2 * current_max_y])
+    if log:
+        axes.set_yscale("log", nonposy='clip')
     plt.legend()
     plt.xlabel("viewing angle (degrees)")
     plt.ylabel("intensity (flux/str)/(input flux)")
@@ -684,6 +692,7 @@ def plot_with_semi_empirical_fit(points, title):
 
     plt.figure()
 
+    current_min_y = 1000
     current_max_y = 0
     for i in range(len(run_name_list)):
         run_name = run_name_list[i]
@@ -695,6 +704,7 @@ def plot_with_semi_empirical_fit(points, title):
         x_data = [point.theta_r_in_degrees for point in points]
         y_data = [point.intensity for point in points]
 
+        current_min_y = min(current_min_y, min(y_data))
         current_max_y = max(current_max_y, max(y_data))
 
         semi_empirical_y = semi_empirical_fit.BRIDF_plotter(one_pass_x_data, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, photodiode_angle, semi_empirical_parameters)
@@ -704,7 +714,7 @@ def plot_with_semi_empirical_fit(points, title):
 
     plt.title(title)
     axes = plt.gca()
-    axes.set_ylim([0, 1.2 * current_max_y])
+    axes.set_ylim([current_min_y, 1.2 * current_max_y])
     plt.legend()
     plt.xlabel("viewing angle (degrees)")
     plt.ylabel("intensity (flux/str)/(input flux)")
@@ -872,7 +882,7 @@ def make_data_all_runs(filename, lower_cutoff, upper_cutoff, intensity_factor=1)
     return [x_data, y_data]
 
 
-def plot_points(points, title, incude_individual_plots=False):
+def plot_points(points, title, include_individual_plots=False, log=True):
     one_pass_x_data = []
     run_name_list = []
     points_by_run_name = []
@@ -890,7 +900,7 @@ def plot_points(points, title, incude_individual_plots=False):
                     index = i
             points_by_run_name[index].append(point)
 
-    if incude_individual_plots:
+    if include_individual_plots:
         # make a plot for each angle
         for i in range(len(run_name_list)):
             run_name = run_name_list[i]
@@ -933,6 +943,8 @@ def plot_points(points, title, incude_individual_plots=False):
 
         axes = plt.gca()
         axes.set_ylim([0, 1.2 * max_y])
+        if log:
+            axes.set_yscale("log", nonposy='clip')
         plt.legend()
         plt.xlabel("viewing angle (degrees)")
         plt.ylabel("intensity (flux/str)/(input flux)")
