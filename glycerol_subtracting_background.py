@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Point import Point
 import TSTR_fit
-from plotting import plot_with_TSTR_fit, make_points, make_data_by_run, plot_with_TSTR_fit_and_fitted_angles, plot_points
+from plotting import subtract_background, plot_with_TSTR_fit, make_points, make_data_by_run, plot_with_TSTR_fit_and_fitted_angles, plot_points
 
 
 # solid angle of photodiode:
@@ -150,39 +150,56 @@ if make_all_points:
 
         points_mineral_oil = points_mineral_oil_30 + points_mineral_oil_45 + points_mineral_oil_52_5 + points_mineral_oil_60 + points_mineral_oil_75
 
+    make_background_points = True
+
+    if make_background_points:
+        # volts * amps/volt
+        flux_i = 0.002603 * 100e-6
+
+        # amps per volt during measurements
+        sensitivity = 100 * 1e-9
+
+        # product of this and measured voltage is (flux/str)/flux_i, flux in units of amps
+        # intensity_factor * V = (V * sensitivity / photodiode_solid_angle) / flux_i
+        intensity_factor = sensitivity / (photodiode_solid_angle * flux_i)
+
+        data = make_data_by_run("glycerol_tests/no sample background in water.txt", -90, 90, intensity_factor)[0]
+
+        points_background = make_points(data[0], 0, 30, 1.39809, 0.5, data[1], 405, photodiode_solid_angle,
+                                            photodiode_angular_width, "background data in mineral oil")
+
 points = points_100 + points_50 + points_0 + points_mineral_oil
 
 points = points_100 + points_50 + points_0
 
+points_mineral_oil_30_subtracted = subtract_background(points_mineral_oil_30, points_background)
+points_mineral_oil_45_subtracted = subtract_background(points_mineral_oil_45, points_background)
+points_mineral_oil_52_5_subtracted = subtract_background(points_mineral_oil_52_5, points_background)
+points_mineral_oil_60_subtracted = subtract_background(points_mineral_oil_60, points_background)
+points_mineral_oil_75_subtracted = subtract_background(points_mineral_oil_75, points_background)
 
-#plot_points(points_0_30 + points_50_30 + points_100_30, "30 degrees")
-#plot_points(points_0_45 + points_50_45 + points_100_45, "45 degrees")
-#plot_points(points_0_60 + points_50_60 + points_100_60, "60 degrees")
-#plot_points(points_0_75 + points_50_75 + points_100_75, "75 degrees")
+plot_points(points_background, "", log=False, show=False)
 
+"""
+plot_points(points_mineral_oil_30 + points_mineral_oil_30_subtracted +
+            points_mineral_oil_45 + points_mineral_oil_45_subtracted +
+            points_mineral_oil_52_5 + points_mineral_oil_52_5_subtracted +
+            points_mineral_oil_60 + points_mineral_oil_60_subtracted +
+            points_mineral_oil_75 + points_mineral_oil_75_subtracted
+            , "Mineral Oil and Background", log=False, show=False)
+"""
 
-#plot_with_TSTR_fit(points_0_30 + points_50_30 + points_100_30, "30 degrees, Fitted")
-#plot_with_TSTR_fit(points_0_45 + points_50_45 + points_100_45, "45 degrees, Fitted")
-#plot_with_TSTR_fit(points_0_60 + points_50_60 + points_100_60, "60 degrees, Fitted")
-#plot_with_TSTR_fit(points_0_75 + points_50_75 + points_100_75, "75 degrees, Fitted")
+plot_points(points_mineral_oil_30 + points_mineral_oil_30_subtracted,
+            "Mineral Oil 30 degrees and Background", log=False, show=False)
+plot_points(points_mineral_oil_45 + points_mineral_oil_45_subtracted,
+            "Mineral Oil 45 degrees and Background", log=False, show=False)
+plot_points(points_mineral_oil_52_5 + points_mineral_oil_52_5_subtracted,
+            "Mineral Oil 52.5 degrees and Background", log=False, show=False)
+plot_points(points_mineral_oil_60 + points_mineral_oil_60_subtracted,
+            "Mineral Oil 60 degrees and Background", log=False, show=False)
+plot_points(points_mineral_oil_75 + points_mineral_oil_75_subtracted,
+            "Mineral Oil 75 degrees and Background", log=False, show=False)
 
+plt.show()
 
-fit_plot_100 = False
-if fit_plot_100:
-    plot_points(points_100, "TSTR Fit")
-    #plot_with_TSTR_fit(points_100_60, "TSTR Fit")
-
-
-fit_plot_0 = False
-if fit_plot_0:
-    plot_points(points_0, "TSTR Fit")
-    #plot_with_TSTR_fit(points_100_60, "TSTR Fit")
-
-plot_points(points_mineral_oil_30 + points_100_30, "")
-plot_points(points_mineral_oil_45 + points_100_45, "")
-plot_points(points_mineral_oil_52_5 + points_100_52_5, "")
-plot_points(points_mineral_oil_60 + points_100_60, "")
-plot_points(points_mineral_oil_75 + points_100_75, "")
-
-#plot_points(points, "TSTR Fit")
 

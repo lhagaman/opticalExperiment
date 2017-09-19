@@ -779,18 +779,21 @@ def TSTR_predict(points_used_for_fit, predicted_points, title):
 
 
 # returns a list of points from one run of data
+# if there are two data points with the same theta_r, it only uses one of them
 def make_points(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity_array,
                  wavelength, photodiode_solid_angle, photodiode_angular_width, run_name):
     points = []
     numpoints = len(theta_r_in_degrees_array)
+    theta_r_list = [] # used to only include one of each
     for i in range(numpoints):
-        theta_r_in_degrees = theta_r_in_degrees_array[i]
-        intensity = intensity_array[i]
-        point = Point(theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity,
-                 wavelength, photodiode_solid_angle, photodiode_angular_width, run_name)
-        points.append(point)
+        if theta_r_in_degrees_array[i] not in theta_r_list:
+            theta_r_in_degrees = theta_r_in_degrees_array[i]
+            theta_r_list.append(theta_r_in_degrees)
+            intensity = intensity_array[i]
+            point = Point(theta_r_in_degrees, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity,
+                     wavelength, photodiode_solid_angle, photodiode_angular_width, run_name)
+            points.append(point)
     return points
-
 
 # returns a list of points from multiple runs of data, finds average and standard deviation
 def make_points_std(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, intensity_array,
@@ -882,7 +885,7 @@ def make_data_all_runs(filename, lower_cutoff, upper_cutoff, intensity_factor=1)
     return [x_data, y_data]
 
 
-def plot_points(points, title, include_individual_plots=False, log=True):
+def plot_points(points, title, include_individual_plots=False, log=True, show=True):
     one_pass_x_data = []
     run_name_list = []
     points_by_run_name = []
@@ -949,7 +952,9 @@ def plot_points(points, title, include_individual_plots=False, log=True):
         plt.xlabel("viewing angle (degrees)")
         plt.ylabel("intensity (flux/str)/(input flux)")
 
-    plt.show()
+
+    if show:
+        plt.show()
 
 
 def plot_points_error_bars(points, title):
@@ -1079,6 +1084,7 @@ def plot_TSTR_fit_error_bars_no_show(points, title):
 
         plt.annotate(string, xy=(0.05, 0.8 - i / 10.), xycoords='axes fraction', size=6)
 
+
 def plot_TSTR_fit_one_set_of_parameters(points, parameters, title):
     color_list = ["r", "g", "b", "m", "c", "y", "k", "violet", "darkviolet", "teal"]
 
@@ -1146,5 +1152,39 @@ def plot_TSTR_fit_one_set_of_parameters(points, parameters, title):
     plt.show()
 
 
+# returns a copy of the points
+def copy_points(points):
+    copy = []
+    for p in points:
+        copy.append(Point(p.theta_r_in_degrees, p.phi_r_in_degrees, p.theta_i_in_degrees, p.n_0, p.polarization, p.intensity,
+                 p.wavelength, p.photodiode_solid_angle, p.photodiode_angular_width, p.run_name))
+    return copy
 
 
+# returns points with background subtracted
+# only returns points which have theta_r the same (when rounded to nearest 8th) for both input lists
+# assumes background points have theta_r = 0 at 90 degrees to beam path, 90 in beam path, -90 when blocking beam path
+# also adds "with background subtracted" to the runnames
+def subtract_background(points, background_points):
+    points_copy = copy_points(points)
+    # these are relative to the rotation stage angle
+    # these have zero in beam path, 180 blocking beam path
+    theta_rs_points_rot = [np.round(8 * (180 - p.theta_i_in_degrees - p.theta_r_in_degrees)) / 8. for p in points]
+    theta_rs_background = [np.round(8 * (180 - 90 - p.theta_r_in_degrees)) / 8. for p in background_points]
+
+    has_negative = False
+
+    for i in range(len(points)):
+        if not theta_rs_points_rot[i] in theta_rs_background:
+            print("No background data for theta_rot="+str(theta_rs_points_rot[i]))
+        else:
+            j = theta_rs_background.index(theta_rs_points_rot[i])
+            points_copy[i].intensity = points[i].intensity - background_points[j].intensity
+            if points_copy[i].intensity < 0:
+                has_negative = True
+    for point in points_copy:
+        point.run_name = point.run_name + " with background subtracted"
+
+    print("Warning: has negative intensities")
+
+    return points_copy
