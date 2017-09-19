@@ -1184,7 +1184,7 @@ def subtract_background(points, background_points):
                 has_negative = True
     for point in points_copy:
         point.run_name = point.run_name + " with background subtracted"
-
-    print("Warning: has negative intensities")
+    if has_negative:
+        print("Warning: has negative intensities")
 
     return points_copy
