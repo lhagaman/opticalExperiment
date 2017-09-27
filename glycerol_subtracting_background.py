@@ -197,18 +197,73 @@ if make_all_points:
 
         points_tape = points_tape_0 + points_tape_45 + points_tape_60 + points_tape_75
 
+    make_9_26_background = True
+    if make_9_26_background:
+        # volts * amps/volt
+        flux_i = 0.002638 * 100e-6
+
+        # amps per volt during measurements
+        sensitivity = 100 * 1e-9
+
+        # product of this and measured voltage is (flux/str)/flux_i, flux in units of amps
+        # intensity_factor * V = (V * sensitivity / photodiode_solid_angle) / flux_i
+        intensity_factor = sensitivity / (photodiode_solid_angle * flux_i)
+
+        d_1 = make_data_by_run("glycerol_tests/9_26 backgrounds.txt", -90, 90, intensity_factor)[3]
+        d_2 = make_data_by_run("glycerol_tests/9_26 backgrounds.txt", -90, 90, intensity_factor)[2]
+        d_3 = make_data_by_run("glycerol_tests/9_26 backgrounds.txt", -90, 90, intensity_factor)[1]
+        d_4 = make_data_by_run("glycerol_tests/9_26 backgrounds.txt", -90, 90, intensity_factor)[0]
+
+        p_1 = make_points(d_1[0], 0, 90, 1.39809, 0.5, d_1[1], 405, photodiode_solid_angle,
+                          photodiode_angular_width, "background in mineral oil with cell at usual angle")
+        p_2 = make_points(d_2[0], 0, 90, 1.39809, 0.5, d_2[1], 405, photodiode_solid_angle,
+                          photodiode_angular_width, "background in mineral oil with cell at different angle")
+        p_3 = make_points(d_3[0], 0, 90, 1.39809, 0.5, d_3[1], 405, photodiode_solid_angle,
+                          photodiode_angular_width, "background in mineral oil with cell at usual angle \nand black foam board angled upward behind cell")
+        p_4 = make_points(d_4[0], 0, 90, 1.39809, 0.5, d_4[1], 405, photodiode_solid_angle,
+                          photodiode_angular_width, "background in mineral oil with cell at usual angle \nand black foam board angled down, leaning against cell opposite photodiode")
+
+        points_9_26 = p_1 + p_2 + p_3 + p_4
+
+    make_cone_comparison = True
+    if make_cone_comparison:
+        # volts * amps/volt
+        flux_i = 0.002603 * 100e-6
+
+        # amps per volt during measurements
+        sensitivity = 100 * 1e-9
+
+        # product of this and measured voltage is (flux/str)/flux_i, flux in units of amps
+        # intensity_factor * V = (V * sensitivity / photodiode_solid_angle) / flux_i
+        intensity_factor = sensitivity / (photodiode_solid_angle * flux_i)
+
+        d_1 = make_data_by_run("glycerol_tests/mineral oil background with and without cone.txt", -90, 90, intensity_factor)[1]
+        d_2 = make_data_by_run("glycerol_tests/mineral oil background with and without cone.txt", -90, 90, intensity_factor)[0]
+
+        p_1 = make_points(d_1[0], 0, 90, 1.39809, 0.5, d_1[1], 405, photodiode_solid_angle,
+                          photodiode_angular_width, "background in mineral oil with cone")
+        p_2 = make_points(d_2[0], 0, 90, 1.39809, 0.5, d_2[1], 405, photodiode_solid_angle,
+                          photodiode_angular_width, "background in mineral oil without cone")
+
+        cone_comparison_points = p_1 + p_2
+
+
 for p in points_tape:
     theta_rot = 90 - p.theta_r_in_degrees
     theta_r = 180 - p.theta_i_in_degrees - theta_rot
     p.theta_r_in_degrees = theta_r
 
-plot_points(points_tape, "Tape in Mineral Oil", log=False)
+#plot_points(points_tape, "Tape in Mineral Oil", log=False)
+
+"""
 
 points_mineral_oil_30_subtracted = subtract_background(points_mineral_oil_30, points_background)
 points_mineral_oil_45_subtracted = subtract_background(points_mineral_oil_45, points_background)
 points_mineral_oil_52_5_subtracted = subtract_background(points_mineral_oil_52_5, points_background)
 points_mineral_oil_60_subtracted = subtract_background(points_mineral_oil_60, points_background)
 points_mineral_oil_75_subtracted = subtract_background(points_mineral_oil_75, points_background)
+"""
+
 
 #plot_points(points_background, "", log=False, show=True)
 """
@@ -226,5 +281,9 @@ plot_points(points_mineral_oil_75 + points_mineral_oil_75_subtracted,
 plt.show()
 
 """
+
+#plot_points(points_9_26, "9/26 Background Measurements", log=False)
+
+plot_points(cone_comparison_points, "Cone Of Darkness Comparison", log=False)
 
 

@@ -930,6 +930,7 @@ def plot_points(points, title, include_individual_plots=False, log=True, show=Tr
 
     plt.figure()
 
+    min_y = 10**10
     max_y = 0
     for i in range(len(run_name_list)):
         run_name = run_name_list[i]
@@ -939,18 +940,20 @@ def plot_points(points, title, include_individual_plots=False, log=True, show=Tr
         y_data = [point.intensity for point in points]
 
         current_max_y = max(y_data)
+        current_min_y = min(y_data)
         max_y = max([max_y, current_max_y])
+        min_y = min([min_y, current_min_y])
 
-        plt.title(title)
         plt.scatter(x_data, y_data, s=2, label=run_name)
 
-        axes = plt.gca()
-        axes.set_ylim([0, 1.2 * max_y])
-        if log:
-            axes.set_yscale("log", nonposy='clip')
-        plt.legend()
-        plt.xlabel("viewing angle (degrees)")
-        plt.ylabel("intensity (flux/str)/(input flux)")
+    plt.title(title)
+    axes = plt.gca()
+    axes.set_ylim([0.8 * min_y, 1.2 * max_y])
+    if log:
+        axes.set_yscale("log", nonposy='clip')
+    plt.legend()
+    plt.xlabel("viewing angle (degrees)")
+    plt.ylabel("intensity (flux/str)/(input flux)")
 
 
     if show:
