@@ -14,9 +14,12 @@ polarization_0 = 0.5
 rho_l_0 = 0.5
 n__0 = 1.5
 gamma_0 = 0.05
+
 s = BRIDF_plotter(theta_r, phi_r_0, theta_i_0, n_0_0, polarization_0, [rho_l_0, n__0, gamma_0])
 l, = plt.plot(theta_r, s, lw=2, color='red')
 plt.axis([-90., 90., 0, 10])
+
+t1 = plt.text(15, 9, "peak angle is currently 45.0")
 
 axcolor = 'lightgoldenrodyellow'
 
@@ -45,7 +48,9 @@ def update(val):
     rho_l = srho_l.val
     n = sn.val
     gamma = sgamma.val
-    l.set_ydata(BRIDF_plotter(theta_r, phi_r, theta_i, n_0, polarization, [rho_l, n, gamma]))
+    y_data = BRIDF_plotter(theta_r, phi_r, theta_i, n_0, polarization, [rho_l, n, gamma])
+    l.set_ydata(y_data)
+    t1.set_text("peak angle is currently " + str(theta_r[y_data.index(max(y_data))]))
     fig.canvas.draw_idle()
 
 sphi_r.on_changed(update)
