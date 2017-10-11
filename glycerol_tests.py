@@ -169,8 +169,8 @@ points = points_100 + points_50 + points_0
 
 fit_plot_100 = False
 if fit_plot_100:
-    plot_points(points_100, "TSTR Fit")
-    #plot_with_TSTR_fit(points_100_60, "TSTR Fit")
+    #plot_points(points_100, "TSTR Fit")
+    plot_with_TSTR_fit(points_100_60, "TSTR Fit")
 
 
 fit_plot_0 = False
@@ -178,11 +178,16 @@ if fit_plot_0:
     plot_points(points_0, "TSTR Fit")
     #plot_with_TSTR_fit(points_100_60, "TSTR Fit")
 
+"""
 plot_points(points_mineral_oil_30 + points_100_30, "")
 plot_points(points_mineral_oil_45 + points_100_45, "")
 plot_points(points_mineral_oil_52_5 + points_100_52_5, "")
 plot_points(points_mineral_oil_60 + points_100_60, "")
 plot_points(points_mineral_oil_75 + points_100_75, "")
+"""
 
 #plot_points(points, "TSTR Fit")
+
+
+#plot_with_TSTR_fit(points_100, "TSTR Fit")
 

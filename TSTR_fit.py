@@ -85,6 +85,45 @@ def BRIDF_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees
     return return_array
 
 
+
+def BRIDF_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters, average_angle=0):
+    phi_r = phi_r_in_degrees * np.pi / 180
+    theta_i = theta_i_in_degrees * np.pi / 180
+    return_array = []
+    for theta_r_in_degrees in theta_r_in_degrees_array:
+        theta_r = np.pi * theta_r_in_degrees / 180
+        return_array.append(BRIDF(theta_r, phi_r, theta_i, n_0, polarization, parameters))
+    if average_angle == 0:
+        return return_array
+    else:
+        grouped = [[] for i in return_array]
+        for i in range(len(return_array)):
+            for j in range(len(return_array)):
+                if np.abs(theta_r_in_degrees_array[j] - theta_r_in_degrees_array[i]) < average_angle / 2.:
+                    grouped[i].append(return_array[j])
+        averaged = [np.average(grouped[i]) for i in range(len(return_array))]
+        return averaged
+
+
+def average_by_angle(theta_r_in_degrees_array, intensity_array, angle):
+    grouped = [[] for i in intensity_array]
+    for i in range(len(intensity_array)):
+        for j in range(len(intensity_array)):
+            if np.abs(theta_r_in_degrees_array[j] - theta_r_in_degrees_array[i]) < angle / 2.:
+                grouped[i].append(intensity_array[j])
+    averaged = [np.average(grouped[i]) for i in range(len(intensity_array))]
+    return averaged
+
+def BRIDF_radiance_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees, n_0, polarization, parameters):
+    phi_r = phi_r_in_degrees * np.pi / 180
+    theta_i = theta_i_in_degrees * np.pi / 180
+    return_array = []
+    for theta_r_in_degrees in theta_r_in_degrees_array:
+        theta_r = np.pi * theta_r_in_degrees / 180
+        return_array.append(BRIDF(theta_r, phi_r, theta_i, n_0, polarization, parameters) / np.cos(theta_r))
+    return return_array
+
+
 def BRIDF_specular_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in_degrees,
                            n_0, polarization, parameters):
     phi_r = phi_r_in_degrees * np.pi / 180
@@ -108,15 +147,17 @@ def BRIDF_diffuse_plotter(theta_r_in_degrees_array, phi_r_in_degrees, theta_i_in
 
 
 def BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters):
+
     rho_L = parameters[0]
     n = parameters[1]
     gamma = parameters[2]
 
-    theta_i_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
+    # from page 85 of coimbra thesis
+    theta_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
         np.sin(theta_i) * np.sin(theta_r) * np.cos(phi_r))
 
-    theta_r_prime = 0.5 * np.arccos(np.cos(theta_i) * np.cos(theta_r) -
-        np.sin(theta_i) * np.sin(theta_r))
+    theta_i_prime = theta_prime
+    theta_r_prime = theta_prime
 
     def P(alpha_):
         return np.power(gamma, 2) / \
@@ -153,7 +194,7 @@ def BRIDF_pair(theta_r, phi_r, theta_i, n_0, polarization, parameters):
     G = H(np.pi / 2 - theta_i_prime) * H(np.pi / 2 - theta_r_prime) * \
         G_prime(theta_i) * G_prime(theta_r)
 
-    F_ = F(theta_i, n_0, n, polarization)
+    F_ = F(theta_i_prime, n_0, n, polarization)
 
     return [F_ * G * P_ / (4 * np.cos(theta_i)),
         rho_L / np.pi * W * (1 - A + B) * np.cos(theta_r)]
