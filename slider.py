@@ -11,7 +11,7 @@ show_all_angles = False
 fig, ax = plt.subplots()
 plt.subplots_adjust(bottom=0.5, top=0.95)
 
-theta_r = np.arange(0, 90, 0.1)
+theta_r = np.arange(-45, 90, 0.1)
 phi_r_0 = 0
 theta_i_0 = 45
 n_0_0 = 1
@@ -28,9 +28,9 @@ l1, = plt.plot(theta_r, s1, lw=2, color='blue')
 
 if log:
     plt.yscale("log")
-    plt.axis([0., 90., 10e-3, 10e2])
+    plt.axis([-45., 90., 10e-3, 10e2])
 else:
-    plt.axis([0., 90., 0., 10.])
+    plt.axis([-45., 90., 0., 10.])
 
 t1 = plt.text(15, 9, "peak angles...")
 

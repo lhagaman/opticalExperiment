@@ -141,7 +141,7 @@ if make_all_points:
 
 plot = True
 if plot:
-
+    """
     fit = TSTR_fit.fit_parameters(points_30_horizontal_air + points_30_vertical_air + \
                  points_45_horizontal_air + points_45_vertical_air + \
                  points_60_horizontal_air + points_60_vertical_air)
@@ -168,6 +168,7 @@ if plot:
 
 
     """
+    """
     #plot_points(points_30_vertical_water + points_30_horizontal_water, "Different Polarizations in water With Slit")
     #plot_points(points_45_vertical_water + points_45_horizontal_water, "Different Polarizations in water With Slit")
     #plot_with_TSTR_fit(points_30_vertical_water + points_30_horizontal_water, "Different Polarizations in water With Slit")
@@ -177,13 +178,13 @@ if plot:
     plot_with_TSTR_fit(points_water, "Different Polarizations in water With Slit")
     """
 
-    """
+
     plot_points(points_30_vertical_mineral_oil + points_30_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
     plot_points(points_45_vertical_mineral_oil + points_45_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
     plot_points(points_60_vertical_mineral_oil + points_60_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
     plot_points(points_75_vertical_mineral_oil + points_75_horizontal_mineral_oil, "Different Polarizations in Mineral Oil With Slit")
     plot_points(points_mineral_oil, "Different Polarizations in mineral_oil With Slit")
-    """
+
 
     """
 
