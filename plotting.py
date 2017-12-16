@@ -885,7 +885,7 @@ def make_data_all_runs(filename, lower_cutoff, upper_cutoff, intensity_factor=1)
     return [x_data, y_data]
 
 
-def plot_points(points, title, include_individual_plots=False, log=True, show=True):
+def plot_points(points, title, include_individual_plots=False, log=True, show=True, draw_lines=False):
     one_pass_x_data = []
     run_name_list = []
     points_by_run_name = []
@@ -945,6 +945,8 @@ def plot_points(points, title, include_individual_plots=False, log=True, show=Tr
         min_y = min([min_y, current_min_y])
 
         plt.scatter(x_data, y_data, s=2, label=run_name)
+        if draw_lines:
+            plt.plot(x_data, y_data)
 
     plt.title(title)
     axes = plt.gca()

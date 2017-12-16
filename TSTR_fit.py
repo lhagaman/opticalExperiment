@@ -10,6 +10,7 @@
 
 import numpy as np
 import scipy.optimize
+import copy
 
 # following equations could be refined for mu !~ mu_0, but teflon has mu~mu_0
 
@@ -256,7 +257,8 @@ def fitter_with_angle(independent_variables_without_angle_array, theta_i, log_rh
     return arr
 
 
-def fit_parameters(points):
+def fit_parameters(points, p0=[0.5, 1.5, 0.05]):
+    p0_log = [np.log(p0[0]), np.log(p0[1]-1), np.log(p0[2])]
     independent_variables_array = []
     intensity_array = []
     for point in points:
@@ -264,8 +266,14 @@ def fit_parameters(points):
                                        point.theta_i_in_degrees, point.n_0, point.polarization])
         intensity_array.append(point.intensity)
     # initial parameters are the ones found in the paper
+    # fitter_p0 = fitter(independent_variables_array, p0_log[0], p0_log[1], p0_log[2])
+    # res_fit_p0 = np.sum((np.array(intensity_array) - np.array(fitter_p0))**2)
+
     fit_params = scipy.optimize.curve_fit(fitter, independent_variables_array, intensity_array,
-                                          p0=[np.log(0.5), np.log(1.5 - 1), np.log(0.05)])[0]
+                                          p0=p0_log)[0]
+    # fitter_popt = fitter(independent_variables_array, fit_params[0], fit_params[1], fit_params[2])
+    # res_fit_popt = np.sum((np.array(intensity_array) - np.array(fitter_popt))**2)
+    # print(res_fit_p0, res_fit_popt)
     return [np.exp(fit_params[0]), np.exp(fit_params)[1] + 1, np.exp(fit_params[2])]
 
 
@@ -284,7 +292,7 @@ def fit_std(points):
 
 
 def change_theta_i(points, new_theta_i):
-    new_points = points[:]
+    new_points = copy.deepcopy(points)
     for point in new_points:
         point.theta_i_in_degrees = new_theta_i
     return new_points
