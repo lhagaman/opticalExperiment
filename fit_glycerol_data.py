@@ -36,20 +36,20 @@ n_gly50 = 1.398 # half glycerol, half water
 
 title = "120 Grit Diffuse Reflector, 10 Degree Avg"
 file_data=[] # note that each file may have multiple runs
-file_data.append(["glycerol_tests/50_ 30,45,60,52.5,75.txt",0.00252 * 100e-6])
 # file_data.append(["glycerol_tests/glycerol 30,45,60,52.5,75.txt",0.00258 * 100e-6])
+file_data.append(["glycerol_tests/50_ 30,45,60,52.5,75.txt",0.00252 * 100e-6])
 
 run_data=[] # note that each file may have multiple runs; format is [theta_i, n, polarization, legend, use_in_plots]
-run_data.append([75.,n_gly,pol_equal,"glycerol, 75 degrees", False])
-run_data.append([52.5,n_gly,pol_equal,"glycerol, 52.5 degrees", False])
-run_data.append([60.,n_gly,pol_equal,"glycerol, 60 degrees", True])
-run_data.append([45.,n_gly,pol_equal,"glycerol, 45 degrees", False])
-run_data.append([30.,n_gly,pol_equal,"glycerol, 30 degrees", False])
-# run_data.append([75.,n_gly50,pol_equal,"50% glycerol, 75 degrees", False])
-# run_data.append([52.5,n_gly50,pol_equal,"50% glycerol, 52.5 degrees", False])
-# run_data.append([60.,n_gly50,pol_equal,"50% glycerol, 60 degrees", True])
-# run_data.append([45.,n_gly50,pol_equal,"50% glycerol, 45 degrees", False])
-# run_data.append([30.,n_gly50,pol_equal,"30% glycerol, 30 degrees", False])
+# run_data.append([75.,n_gly,pol_equal,"glycerol, 75 degrees", False])
+# run_data.append([52.5,n_gly,pol_equal,"glycerol, 52.5 degrees", False])
+# run_data.append([60.,n_gly,pol_equal,"glycerol, 60 degrees", True])
+# run_data.append([45.,n_gly,pol_equal,"glycerol, 45 degrees", False])
+# run_data.append([30.,n_gly,pol_equal,"glycerol, 30 degrees", False])
+run_data.append([75.,n_gly50,pol_equal,"50% glycerol, 75 degrees", False])
+run_data.append([52.5,n_gly50,pol_equal,"50% glycerol, 52.5 degrees", False])
+run_data.append([60.,n_gly50,pol_equal,"50% glycerol, 60 degrees", True])
+run_data.append([45.,n_gly50,pol_equal,"50% glycerol, 45 degrees", False])
+run_data.append([30.,n_gly50,pol_equal,"30% glycerol, 30 degrees", False])
 
 run_data_transpose = list(map(list, zip(*run_data)))
 
@@ -93,21 +93,24 @@ points_x = [point.theta_r_in_degrees for point in points_arr]
 points_y = [point.intensity for point in points_arr]
 
 #print(points_x, points_y)
-fit_params_angle_float = TSTR_fit.fit_parameters_and_angle(points_arr)
-fit_params = TSTR_fit.fit_parameters(points_arr, p0=[0.5, 1.3, 1.0])
-print(fit_params)
-#print(fit_params_angle_float)
 avg_angle = 3.7
-fit_model = TSTR_fit.BRIDF_plotter(points_x, 0, 60., n_gly, 0.5, fit_params, average_angle=0.)
-fit_model_avg = TSTR_fit.BRIDF_plotter(points_x, 0, 60., n_gly, 0.5, fit_params, average_angle=avg_angle)
-#fit_angle_float = TSTR_fit.BRIDF_plotter(points_x, 0, fit_params_angle_float[0], n_gly, 0.5, fit_params_angle_float[1:], average_angle=3.7)
-model_by_eye = TSTR_fit.BRIDF_plotter(points_x, 0, 60., n_gly, 0.5, [0.5, 1.33, 0.5], average_angle=avg_angle)
+fit_params_angle_float = TSTR_fit.fit_parameters_and_angle(points_arr)
+fit_params = TSTR_fit.fit_parameters(points_arr, p0=[0.6, 1.3, 0.5], average_angle=avg_angle)
+print("Fit parameters: ", fit_params)
+#print(fit_params_angle_float)
+fit_model = TSTR_fit.BRIDF_plotter(points_x, 0, 60., n_gly50, 0.5, fit_params, average_angle=0.)
+fit_model_avg = TSTR_fit.BRIDF_plotter(points_x, 0, 60., n_gly50, 0.5, fit_params, average_angle=avg_angle)
+#fit_angle_float = TSTR_fit.BRIDF_plotter(points_x, 0, fit_params_angle_float[0], n_gly50, 0.5, fit_params_angle_float[1:], average_angle=3.7)
+model_by_eye = TSTR_fit.BRIDF_plotter(points_x, 0, 60., n_gly50, 0.5, [0.6, 1.27, 0.5], average_angle=avg_angle)
+model_by_eye_no_avg = TSTR_fit.BRIDF_plotter(points_x, 0, 60., n_gly50, 0.5, [0.6, 1.27, 0.5], average_angle=0.)
 #print(fit)	
 
 res_fit_model = np.sum((np.array(points_y) - np.array(fit_model))**2)
 res_fit_model_avg = np.sum((np.array(points_y) - np.array(fit_model_avg))**2)
 res_model_by_eye = np.sum((np.array(points_y) - np.array(model_by_eye))**2)
-print("residual from fit: ", res_fit_model, ", residual from fit after avg: ", res_fit_model_avg, ", residual from est by eye: ", res_model_by_eye)
+res_model_by_eye_no_avg = np.sum((np.array(points_y) - np.array(model_by_eye_no_avg))**2)
+print("residual from fit: ", res_fit_model, ", residual from fit after avg: ", res_fit_model_avg)
+print("residual from est by eye: ", res_model_by_eye_no_avg, ", residual by eye after avg: ", res_model_by_eye)
 
 #TSTR_fit.fitter()
 
