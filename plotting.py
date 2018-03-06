@@ -1193,3 +1193,23 @@ def subtract_background(points, background_points):
         print("Warning: has negative intensities")
 
     return points_copy
+
+
+# plots points when x values are decreasing, starts a new line otherwise (removes the annoying slanted lines between plots
+def plot_with_restarts(x_data, y_data, label="", color="b"):
+    x_data_by_run = []
+    y_data_by_run = []
+    for i in range(len(x_data)):
+        # if we should start a new run
+        if i == 0 or x_data[i] < x_data[i - 1]:
+            x_data_by_run.append([])
+            y_data_by_run.append([])
+        x_data_by_run[-1].append(x_data[i])
+        y_data_by_run[-1].append(y_data[i])
+
+    for i in range(len(x_data_by_run)):
+        if i == 0:
+            plt.plot(x_data_by_run[0], y_data_by_run[0], c=color, label=label)
+        else:
+            plt.plot(x_data_by_run[i], y_data_by_run[i], c=color)
+    return
